@@ -1,5 +1,9 @@
 # 咫尺
 
+[![CI](https://github.com/oaa529/zhichi/actions/workflows/ci.yml/badge.svg)](https://github.com/oaa529/zhichi/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+![Node](https://img.shields.io/badge/node-%E2%89%A518-brightgreen)
+
 > 微信风格 + 二次元立绘的 AI 角色对话应用。核心是一套「拟真引擎」：
 > 把 LLM 的流式输出转换成**像真人聊天**的消息流（分条、打字节奏、犹豫、错别字、
 > 作息感知、说漏嘴后撤回），而不是让整段回复一次性砸出来。
