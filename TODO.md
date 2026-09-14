@@ -116,6 +116,81 @@
 
 ---
 
+# 第一百零四轮：开源到 GitHub（顺带被 CI 抓出一个时区 bug）
+
+## 一、上传前的体检
+
+把项目变成"别人 clone 下来就能跑"的公开仓库，先查了三件事：
+
+| 检查 | 结果 |
+| --- | --- |
+| 有没有真实 API Key 落盘 | ✅ 全仓库搜 `sk-nrJQ` 零命中（只有文档里的 `sk-...` 占位符） |
+| 有没有 `.gitignore` | ❌ **没有**：`node_modules`（几百 MB）、`coverage/`、`dist/`、`.pw-profile/` 都会被提交 |
+| `.npmrc` 里有什么 | 三条**关闭 pnpm 供应链检查**的本机 workaround（`minimumReleaseAge=0` 等） |
+| GitHub 侧 | `gh` 已安装但 token 失效、SSH key 未配（后来由用户完成授权） |
+
+## 二、补的开源必需品
+
+- **`.gitignore`**：依赖 / 构建产物 / 本地验证残留（`.pw-profile`、`.playwright-cli`）/
+  `.env*`（可能写 Key）/ 探针日志
+- **`.gitattributes`**：`* text=auto eol=lf` —— 主要在 Windows 开发、要在 Linux/macOS
+  上 clone，不统一换行会导致"整文件 diff"
+- **`LICENSE`**：MIT
+- **`.github/workflows/ci.yml`**：推送即跑 typecheck + 测试 + 构建
+  （pnpm 版本不写死，跟着 `package.json` 的 `packageManager` 走，保证与本地一致）
+- **README**：补环境要求（Node ≥18、`corepack enable pnpm`）、真实 clone 地址、
+  "不配 Key 也能玩（Mock 完全离线）"、许可证与密钥说明、顶部三枚徽章
+- **删掉 `.npmrc`**：它是本机 workaround，开源不该把"关闭安全检查"推给所有人。
+  实测用**独立 store**（模拟全新机器）安装 + 测试全部通过，才敢删。
+
+## 三、CI 抓出一个真 bug（本轮最有价值的部分）
+
+首次推送后 **GitHub Actions 在 Ubuntu 上红了**：4 个文件 5 条测试失败，
+而本地 Windows 全绿。失败集中在睡眠 / 忙碌相关的用例上。
+
+**根因**：这些用例用**本机时间**造假时刻（`new Date(2026, 8, 13, 10, 0, 0)`、
+`new Date().setHours(2,0,0,0)`），档案里却写死 `timezone: "Asia/Shanghai"`。
+第八十八轮起作息改成**按角色时区**判定——于是这些用例只在开发者机器
+（Asia/Shanghai）上成立，到了 UTC 的 CI 上"本地 10 点"对应上海 18 点，
+忙碌/睡眠窗口直接不命中。
+
+**修法**：这几个文件的档案时区改为**宿主时区**
+（`Intl.DateTimeFormat().resolvedOptions().timeZone`），让它跟"本地时间造时刻"
+这一假设自洽。
+
+**顺带得到一个以后能一直用的复现手段**：Windows 上 Node 认 `TZ` 变量，
+所以跨平台问题可以本地先复现：
+
+```powershell
+$env:TZ="UTC"; pnpm test
+```
+
+修完在 **UTC / America/New_York / Europe/London** 三个时区 + 本机各跑一遍，
+875 个测试全绿；CI 也变绿。
+
+## 四、发布后的硬验证（从 GitHub 重新克隆）
+
+```
+克隆 → 252 个文件（无 node_modules/coverage/dist/.pw-profile，.npmrc 已不在）
+     → pnpm install --frozen-lockfile --store-dir .store-probe（独立 store = 全新机器）
+       8.5s 装完，esbuild postinstall 正常
+     → TZ=UTC pnpm test：875 个全绿
+     → pnpm -r typecheck：通过
+     → pnpm build:web：523.19 KB / gzip 177.82 KB
+     → pnpm dev 起得来，浏览器打开无页面错误（截图已存）
+CI（ubuntu-latest + Node 20）：装依赖 / 类型检查 / 测试 / 构建 四步全绿
+```
+
+仓库：<https://github.com/oaa529/zhichi>（public，MIT，已加 topics 与描述）
+
+## 五、留给用户的三件小事
+
+1. LICENSE 署名现在是 `oaa`，想换真名/ID 随时改；
+2. `TODO.md`（本文件，约 300KB 开发日志）与 `.trae/documents/` 已公开，想收回可以删；
+3. 想要英文 README / 截图，可以再加。
+
+---
+
 # 第一百零三轮：剧情累积的三个失真（线索积灰 / 事件灌水 / 任务漏采）
 
 ## 一、先造场景：四轮对话，两次"了结"
