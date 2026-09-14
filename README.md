@@ -4,6 +4,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 ![Node](https://img.shields.io/badge/node-%E2%89%A518-brightgreen)
 
+![界面截图](./docs/screenshot.png)
+
 > 微信风格 + 二次元立绘的 AI 角色对话应用。核心是一套「拟真引擎」：
 > 把 LLM 的流式输出转换成**像真人聊天**的消息流（分条、打字节奏、犹豫、错别字、
 > 作息感知、说漏嘴后撤回），而不是让整段回复一次性砸出来。
@@ -13,6 +15,31 @@
 > 没有后端、没有云依赖：clone 下来装个依赖就能跑。
 > 测试套件在 **Windows 本机 + Linux（GitHub Actions）+ UTC/纽约/伦敦三个时区**下都验证过，
 > 换机器不会因为时区或路径差异变红。
+
+---
+
+## English
+
+**Zhichi (咫尺)** — a WeChat-style chat UI for talking with AI characters, built around a
+"realism engine" that turns one LLM stream into a **human-like message flow**: replies arrive
+as several short bubbles, with typing rhythm, hesitation, occasional typos (auto-corrected),
+presence awareness (a character with a sleep schedule may answer half-asleep, or next
+morning), and the occasional "oops, let me take that back".
+
+Characters also **remember**: long-term memory is extracted in the background and retrieved
+by relevance, and each session has a **story state card** (chapter / scene / open threads /
+event timeline). Everything is local-first — data lives in your browser's IndexedDB, and the
+API key stays in memory only: it is never written to disk and never sent anywhere except the
+LLM provider you configure.
+
+```bash
+corepack enable pnpm          # Node >= 18
+git clone https://github.com/oaa529/zhichi.git && cd zhichi
+pnpm install && pnpm dev      # http://localhost:5174 — works offline with the Mock adapter
+```
+
+Scope: **text chat + character art only** — no voice / video / image messages.
+The UI and docs are in Chinese. Licensed under [MIT](./LICENSE).
 
 ---
 
