@@ -36,6 +36,15 @@ class CapturingAdapter implements ILLMAdapter {
 /** 上午九点到十二点在上课。 */
 const MORNING_CLASS = [{ start: "09:00", end: "12:00", label: "在上课" }];
 
+/**
+ * 宿主时区。
+ *
+ * 这个文件用**本地时间**造假时刻（`new Date(2026, 8, 13, 10, 0, 0)`），
+ * 所以档案里必须写宿主时区——写死 "Asia/Shanghai" 的话，在 UTC 的 CI 上
+ * "本地 10 点"对应上海 18 点，忙碌时段直接不命中（GitHub Actions 就是这么红的）。
+ */
+const HOST_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
 function makeProfile(
   busyPeriods: ReadonlyArray<{ start: string; end: string; label: string }> | null,
 ): ICharacterProfile {
@@ -53,7 +62,7 @@ function makeProfile(
       wakeTime: "07:30",
       sleepTime: "23:30",
       scheduleEnabled: true,
-      timezone: "Asia/Shanghai",
+      timezone: HOST_ZONE,
       sleepReplyPolicy: "next-day-queue",
       ...(busyPeriods ? { busyPeriods } : {}),
     },

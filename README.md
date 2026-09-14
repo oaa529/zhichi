@@ -6,6 +6,10 @@
 
 自用向的单机应用：数据全部存在浏览器本地（IndexedDB），API Key 只驻留内存、不落盘。
 
+> 没有后端、没有云依赖：clone 下来装个依赖就能跑。
+> 测试套件在 **Windows 本机 + Linux（GitHub Actions）+ UTC/纽约/伦敦三个时区**下都验证过，
+> 换机器不会因为时区或路径差异变红。
+
 ---
 
 ## 功能一览
@@ -274,8 +278,8 @@ corepack enable pnpm        # 或者：npm i -g pnpm
 然后把仓库克隆下来跑起来：
 
 ```bash
-git clone <你的仓库地址>
-cd zhichi          # 目录名以你 clone 下来的为准
+git clone https://github.com/oaa529/zhichi.git
+cd zhichi
 pnpm install
 pnpm dev          # 启动 web 应用（默认 http://localhost:5174，端口占用会自动递增）
 ```

@@ -15,6 +15,16 @@ import { SessionList } from "../components/SessionList";
 
 const NOW = 1_700_000_000_000;
 
+/**
+ * 宿主时区。
+ *
+ * 列表状态标签由"角色作息 + 当前时刻"推导，而用例用**本地时间**
+ * 造假时刻（`new Date(2026, 8, 13, 10, 0, 0)`）。档案里必须写宿主时区，
+ * 写死 "Asia/Shanghai" 的话在 UTC 的 CI 上"本地 10 点"是上海 18 点，
+ * 忙碌标签就不会出现（GitHub Actions 实测红过）。
+ */
+const HOST_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
 function makeSession(overrides: Partial<ISession> = {}): ISession {
   return {
     id: "s1",
@@ -136,7 +146,7 @@ describe("SessionList", () => {
         wakeTime: "07:30",
         sleepTime: "23:30",
         scheduleEnabled: true,
-        timezone: "Asia/Shanghai",
+        timezone: HOST_ZONE,
         sleepReplyPolicy: "drowsy-burst",
         ...(busy
           ? { busyPeriods: [{ start: "09:00", end: "12:00", label: "在上课" }] }

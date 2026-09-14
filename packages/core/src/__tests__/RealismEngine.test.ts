@@ -22,6 +22,15 @@ import type {
 import type { IRealismEngineOutput } from "@wechat-rp/shared-types";
 import type { IEngineSubscription } from "@wechat-rp/shared-types";
 
+/**
+ * 宿主时区。
+ *
+ * 本文件多处用**本地时间**造假时刻（`new Date(2026, 8, 13, 10, 0, 0)`），
+ * 档案时区必须跟着宿主走：写死 "Asia/Shanghai" 的话，在 UTC 的 CI 上
+ * "本地凌晨 2 点"对应上海上午 10 点，睡眠策略的用例就全废了。
+ */
+const HOST_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
 /** 捕获请求的假适配器（断言 Prompt 注入用）。 */
 class CapturingAdapter implements ILLMAdapter {
   public lastRequest: ILLMRequest | null = null;
@@ -165,7 +174,7 @@ const mockProfile: ICharacterProfile = {
     wakeTime: "07:00",
     sleepTime: "23:00",
     scheduleEnabled: false,
-    timezone: "Asia/Shanghai",
+    timezone: HOST_ZONE,
     sleepReplyPolicy: "next-day-queue",
   },
   personalityTraits: {
@@ -273,7 +282,7 @@ describe("RealismEngine", () => {
         wakeTime: "07:00",
         sleepTime: "23:00",
         scheduleEnabled: true,
-        timezone: "Asia/Shanghai",
+        timezone: HOST_ZONE,
         sleepReplyPolicy: "silent",
       },
     };

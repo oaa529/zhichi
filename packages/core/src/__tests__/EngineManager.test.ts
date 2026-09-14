@@ -12,6 +12,13 @@ import { EngineManager } from "../EngineManager";
 import { createMockAdapter } from "../llm/MockAdapter";
 import type { ILLMConfigInternal } from "../llm/types";
 
+/**
+ * 宿主时区：本文件用**本地时间**造时刻（`new Date(2026, 8, 12, 14, 0, 0)`），
+ * 档案时区必须跟着宿主走，否则在 UTC 的 CI 上"本地 14:00"不等于上海 14:00，
+ * 睡眠窗口对不上（GitHub Actions 实测红过）。
+ */
+const HOST_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
 const llmConfig: ILLMConfigInternal = {
   baseURL: "http://localhost",
   apiKey: "test-key",
@@ -48,7 +55,7 @@ const baseProfile: ICharacterProfile = {
     wakeTime: "07:30",
     sleepTime: "23:30",
     scheduleEnabled: true,
-    timezone: "Asia/Shanghai",
+    timezone: HOST_ZONE,
     sleepReplyPolicy: "drowsy-burst",
   },
   personalityTraits: {
@@ -133,7 +140,7 @@ describe("EngineManager", () => {
         wakeTime: "14:01",
         sleepTime: "13:59",
         scheduleEnabled: true,
-        timezone: "Asia/Shanghai",
+        timezone: HOST_ZONE,
         sleepReplyPolicy: "silent",
       },
     };
