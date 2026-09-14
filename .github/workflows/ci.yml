@@ -1,0 +1,40 @@
+# 每次推送 / PR 都跑一遍：类型检查、测试、构建。
+#
+# 开源仓库的意义：别人看到绿标才敢 clone；而且我一个人在本地跑，
+# 换台机器/换个 Node 版本可能就红了——CI 是那个"别人的机器"。
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 装 Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 装 pnpm
+        # 不写 version：pnpm/action-setup 会读 package.json 里的 packageManager，
+        # 这样 CI 用的版本跟你本地**永远一致**（本地是 12.3.4）
+        uses: pnpm/action-setup@v4
+
+      - name: 装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 类型检查
+        run: pnpm -r typecheck
+
+      - name: 单元/集成测试
+        run: pnpm test
+
+      - name: 构建
+        run: |
+          pnpm build
+          pnpm build:web

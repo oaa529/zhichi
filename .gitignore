@@ -1,0 +1,29 @@
+# ---------- 依赖与构建产物 ----------
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# ---------- 本地验证留下的东西（不进版本库） ----------
+# 浏览器验证用的临时 profile 与截图
+.pw-profile/
+.playwright-cli/
+# 真机探针的日志与临时脚本产物
+work/_*
+work/*.log
+
+# ---------- 本地配置与密钥 ----------
+# 环境变量兜底配置（里面可能写着 API Key，绝不提交）
+.env
+.env.local
+.env.*.local
+
+# ---------- 编辑器 / 系统 ----------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# ---------- 发布产物（pnpm pack / npm publish 的临时目录） ----------
+*.tgz

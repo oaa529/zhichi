@@ -1,0 +1,29 @@
+{
+  "name": "wechat-realism",
+  "private": true,
+  "version": "0.0.1",
+  "description": "UI 1:1 复刻微信 + 内核为极致拟真 AI RP 的应用",
+  "type": "module",
+  "packageManager": "pnpm@12.3.4",
+  "scripts": {
+    "dev": "pnpm --filter @wechat-rp/web dev",
+    "build": "pnpm -r --filter=./packages/* build",
+    "build:web": "pnpm --filter @wechat-rp/web build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "tsup": "^8.2.4",
+    "vitest": "^2.0.5",
+    "@vitest/coverage-v8": "^2.0.5",
+    "jsdom": "^25.0.0",
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/jest-dom": "^6.4.8"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

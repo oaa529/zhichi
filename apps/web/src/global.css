@@ -1,0 +1,4462 @@
+/**
+ * @file global.css
+ * 咫尺 — 简约小清新 + 二次元风格。
+ *
+ * 配色：莫兰迪粉蓝、奶油白、樱花粉、薄荷绿。
+ * 圆角更大、阴影更柔、留白更多。
+ */
+
+:root {
+  /* 主色调 */
+  --zhichi-primary: #7c9eff;
+  --zhichi-primary-light: #b8d0ff;
+  --zhichi-primary-dark: #5a7de8;
+
+  /* 辅助色 */
+  --zhichi-accent: #ffb7c5;       /* 樱花粉 */
+  --zhichi-accent-light: #ffd8df;
+  --zhichi-success: #7ec99f;
+  --zhichi-warning: #ffc56b;
+  --zhichi-danger: #ff8a9a;
+
+  /* 背景层 */
+  --zhichi-bg: #faf6f2;          /* 奶油白 */
+  --zhichi-bg-soft: #f5f0eb;
+  --zhichi-bg-card: #ffffff;
+  --zhichi-bubble-self: #c8e6ff;  /* 浅蓝 */
+  --zhichi-bubble-other: #ffffff;
+
+  /* 文字 */
+  --zhichi-text: #3a3a4a;
+  --zhichi-text-sub: #9a9aaa;
+  --zhichi-text-mute: #c0c0cc;
+
+  /* 边界/分隔 */
+  --zhichi-divider: #ede8e3;
+  --zhichi-border: #e0dcd7;
+
+  /* 阴影 */
+  --zhichi-shadow-sm: 0 2px 8px rgba(122, 100, 140, 0.06);
+  --zhichi-shadow-md: 0 4px 16px rgba(122, 100, 140, 0.1);
+  --zhichi-shadow-lg: 0 8px 32px rgba(122, 100, 140, 0.14);
+
+  /* 圆角 */
+  --zhichi-radius-sm: 6px;
+  --zhichi-radius-md: 12px;
+  --zhichi-radius-lg: 18px;
+  --zhichi-radius-full: 999px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+    "Microsoft YaHei", "Helvetica Neue", sans-serif;
+  background: linear-gradient(135deg, #faf6f2 0%, #f3eef9 100%);
+  color: var(--zhichi-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- 应用容器 ---------- */
+
+.wechat-app {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--zhichi-bg);
+  position: relative;
+}
+
+.wechat-app--loading {
+  align-items: center;
+  justify-content: center;
+  color: var(--zhichi-text-sub);
+  font-size: 14px;
+}
+
+/* ---------- 主布局 ---------- */
+
+.zhichi-shell {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background: var(--zhichi-bg);
+  overflow: hidden;
+}
+
+.zhichi-shell__sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--zhichi-bg-soft);
+  border-right: 1px solid var(--zhichi-divider);
+}
+
+.zhichi-shell__sidebar-header {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--zhichi-divider);
+}
+
+.zhichi-shell__sidebar-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--zhichi-text);
+  letter-spacing: 0.5px;
+}
+
+.zhichi-shell__sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.zhichi-shell__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--zhichi-bg);
+}
+
+.zhichi-shell__main-header {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 上下文占用指示器绝对定位在右侧，标题保持居中 */
+  position: relative;
+  /* 必须有层级：否则悬浮出来的明细面板会被消息列表盖住 */
+  z-index: 5;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--zhichi-divider);
+}
+
+.zhichi-shell__main-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--zhichi-text);
+}
+
+/* 标题 + 在场状态（在线 / 在上课 / 已就寝）的竖排组合 */
+.zhichi-shell__main-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  line-height: 1.15;
+}
+
+.zhichi-shell__main-presence {
+  font-size: 11px;
+  color: var(--zhichi-text-mute);
+}
+
+/* 忙碌与就寝用不同色调，扫一眼就知道"现在找它合不合适" */
+.zhichi-shell__main-presence[data-presence="away"] {
+  color: var(--zhichi-warning);
+}
+
+.zhichi-shell__main-presence[data-presence="sleeping"] {
+  color: var(--zhichi-text-sub);
+}
+
+/* ---------- 上下文占用指示器 ---------- */
+
+/* ---------- 错误兜底界面 ---------- */
+
+.zhichi-error-boundary {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px;
+  text-align: center;
+  background: var(--zhichi-bg);
+  color: var(--zhichi-text);
+}
+
+.zhichi-error-boundary__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.zhichi-error-boundary__text {
+  max-width: 420px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--zhichi-text-sub);
+}
+
+.zhichi-error-boundary__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.zhichi-error-boundary__btn {
+  padding: 9px 18px;
+  border: 1.5px solid var(--zhichi-primary);
+  border-radius: var(--zhichi-radius-sm);
+  background: var(--zhichi-bg-card);
+  color: var(--zhichi-primary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.15s;
+}
+
+.zhichi-error-boundary__btn:hover {
+  transform: translateY(-1px);
+}
+
+.zhichi-error-boundary__btn--primary {
+  background: linear-gradient(135deg, var(--zhichi-primary), var(--zhichi-primary-dark));
+  color: #fff;
+}
+
+.zhichi-error-boundary__note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--zhichi-primary-dark);
+}
+
+.zhichi-error-boundary__details {
+  max-width: 520px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--zhichi-text-mute);
+  text-align: left;
+}
+
+.zhichi-error-boundary__trace {
+  max-height: 200px;
+  overflow: auto;
+  padding: 8px 10px;
+  border-radius: var(--zhichi-radius-sm);
+  background: var(--zhichi-bg-soft);
+  font-family: "SF Mono", "Consolas", monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.zhichi-context-usage {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.zhichi-context-usage__btn {
+  padding: 4px 9px;
+  border: 1px solid var(--zhichi-divider);
+  border-radius: 999px;
+  background: var(--zhichi-bg-card);
+  color: var(--zhichi-text-mute);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.zhichi-context-usage__btn:hover {
+  color: var(--zhichi-primary);
+  border-color: var(--zhichi-primary-light);
+}
+
+.zhichi-context-usage__btn[data-tight="true"] {
+  color: var(--zhichi-warning);
+  border-color: var(--zhichi-warning);
+}
+
+.zhichi-context-usage__panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 20;
+  width: 232px;
+  padding: 10px 12px;
+  background: var(--zhichi-bg-card);
+  border: 1px solid var(--zhichi-divider);
+  border-radius: var(--zhichi-radius-sm);
+  box-shadow: var(--zhichi-shadow-md);
+  text-align: left;
+  animation: zhichi-fade-in 0.15s ease-out;
+}
+
+.zhichi-context-usage__title {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--zhichi-text);
+}
+
+.zhichi-context-usage__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.zhichi-context-usage__list li {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--zhichi-text-sub);
+}
+
+.zhichi-context-usage__warn {
+  margin: 8px 0 0;
+  padding-top: 8px;
+  border-top: 1px dashed var(--zhichi-divider);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--zhichi-warning);
+}
+
+/* 累计用量：与"本次请求"区分开，用分隔线隔断 */
+.zhichi-context-usage__total {
+  margin: 8px 0 0;
+  padding-top: 8px;
+  border-top: 1px dashed var(--zhichi-divider);
+  font-size: 12px;
+  color: var(--zhichi-text-sub);
+  font-variant-numeric: tabular-nums;
+}
+
+.zhichi-context-usage__hint {
+  margin: 8px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--zhichi-text-mute);
+}
+
+.zhichi-shell__main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ---------- Tab Bar（左侧垂直） ---------- */
+
+.zhichi-tab-bar {
+  width: 72px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0;
+  gap: 4px;
+  background: linear-gradient(180deg, #f3eef9 0%, #ede8f5 100%);
+  border-right: 1px solid var(--zhichi-divider);
+}
+
+.zhichi-tab-bar__logo {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--zhichi-radius-md);
+  background: linear-gradient(135deg, var(--zhichi-primary), var(--zhichi-accent));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  box-shadow: var(--zhichi-shadow-sm);
+}
+
+.zhichi-tab-bar__logo-text {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.zhichi-tab-bar__item {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--zhichi-text-sub);
+  transition: color 0.2s, background 0.15s;
+  position: relative;
+  border-radius: var(--zhichi-radius-md);
+  margin-bottom: 4px;
+}
+
+.zhichi-tab-bar__item:hover {
+  color: var(--zhichi-primary);
+  background: rgba(124, 158, 255, 0.08);
+}
+
+.zhichi-tab-bar__item--active {
+  color: var(--zhichi-primary);
+  background: rgba(124, 158, 255, 0.12);
+}
+
+.zhichi-tab-bar__item--active::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  border-radius: var(--zhichi-radius-full);
+  background: var(--zhichi-primary);
+}
+
+.zhichi-tab-bar__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: transform 0.2s;
+}
+
+.zhichi-tab-bar__item--active .zhichi-tab-bar__icon {
+  transform: scale(1.08);
+}
+
+.zhichi-tab-bar__label {
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.zhichi-tab-bar__badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--zhichi-radius-full);
+  background: var(--zhichi-danger);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(255, 138, 154, 0.4);
+}
+
+/* ---------- 可拖拽分隔条 ---------- */
+
+.zhichi-shell__resizer {
+  width: 4px;
+  flex-shrink: 0;
+  cursor: col-resize;
+  background: transparent;
+  position: relative;
+  z-index: 10;
+  transition: background 0.15s;
+}
+
+.zhichi-shell__resizer:hover,
+.zhichi-shell__resizer:active {
+  background: var(--zhichi-primary);
+  opacity: 0.5;
+}
+
+/* ---------- 会话项容器 + 三点菜单 ---------- */
+
+.zhichi-session-list__item-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.zhichi-session-list__item-wrap .zhichi-session-list__item {
+  flex: 1;
+}
+
+.zhichi-session-list__more-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--zhichi-radius-sm);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--zhichi-text-mute);
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+}
+
+.zhichi-session-list__item-wrap:hover .zhichi-session-list__more-btn {
+  opacity: 1;
+}
+
+.zhichi-session-list__more-btn:hover {
+  background: rgba(124, 158, 255, 0.12);
+  color: var(--zhichi-primary);
+}
+
+/* 未读红点（头像左上角） */
+.zhichi-session-list__unread-dot {
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--zhichi-danger);
+  border: 2px solid var(--zhichi-bg-soft);
+  box-shadow: 0 1px 4px rgba(255, 138, 154, 0.5);
+}
+
+/* 置顶图标 */
+.zhichi-session-list__pin-icon {
+  margin-right: 4px;
+  font-size: 12px;
+}
+
+/* 非在线状态（在上课 / 已就寝）：小字跟在名字后面，一眼看出"现在别打扰" */
+.zhichi-session-list__presence {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--zhichi-bg-soft);
+  color: var(--zhichi-text-mute);
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.zhichi-session-list__presence[data-presence="away"] {
+  color: var(--zhichi-warning);
+}
+
+.zhichi-session-list__presence[data-presence="sleeping"] {
+  color: var(--zhichi-text-sub);
+}
+
+/* 三点下拉菜单 */
+.zhichi-session-menu {
+  position: absolute;
+  right: 8px;
+  top: 36px;
+  z-index: 50;
+  min-width: 140px;
+  background: var(--zhichi-bg-card);
+  border-radius: var(--zhichi-radius-md);
+  box-shadow: var(--zhichi-shadow-lg);
+  padding: 4px 0;
+  animation: zhichi-menu-in 0.15s ease-out;
+}
+
+@keyframes zhichi-menu-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.zhichi-session-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--zhichi-text);
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.zhichi-session-menu__item:hover:not(:disabled) {
+  background: rgba(124, 158, 255, 0.08);
+  color: var(--zhichi-primary);
+}
+
+.zhichi-session-menu__item:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.zhichi-session-menu__item--danger {
+  color: var(--zhichi-danger);
+}
+
+.zhichi-session-menu__item--danger:hover {
+  background: rgba(255, 138, 154, 0.1) !important;
+  color: var(--zhichi-danger) !important;
+}
+
+/* ---------- 实时 AI 配置区 ---------- */
+
+.zhichi-realtime-ai {
+  background: linear-gradient(135deg, rgba(124, 158, 255, 0.08), rgba(255, 183, 197, 0.08));
+  border: 1px solid rgba(124, 158, 255, 0.2);
+  border-radius: var(--zhichi-radius-md);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.zhichi-realtime-ai__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.zhichi-realtime-ai__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--zhichi-primary);
+}
+
+.zhichi-realtime-ai__title svg {
+  color: var(--zhichi-primary);
+}
+
+.zhichi-realtime-ai__toggle {
+  width: 40px;
+  height: 22px;
+  border-radius: var(--zhichi-radius-full);
+  border: none;
+  background: var(--zhichi-text-mute);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+  padding: 0;
+}
+
+.zhichi-realtime-ai__toggle--on {
+  background: var(--zhichi-primary);
+}
+
+.zhichi-realtime-ai__toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s;
+}
+
+.zhichi-realtime-ai__toggle--on .zhichi-realtime-ai__toggle-knob {
+  transform: translateX(18px);
+}
+
+.zhichi-realtime-ai__desc {
+  font-size: 12px;
+  color: var(--zhichi-text-sub);
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.zhichi-realtime-ai__interval {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--zhichi-text-sub);
+}
+
+.zhichi-realtime-ai__interval-input {
+  width: 70px;
+  padding: 4px 8px;
+  border: 1px solid var(--zhichi-border);
+  border-radius: var(--zhichi-radius-sm);
+  font-size: 13px;
+  text-align: center;
+  outline: none;
+  background: var(--zhichi-bg);
+  color: var(--zhichi-text);
+  transition: border-color 0.2s;
+}
+
+.zhichi-realtime-ai__interval-input:focus {
+  border-color: var(--zhichi-primary);
+  box-shadow: 0 0 0 3px rgba(124, 158, 255, 0.15);
+}
+
+.zhichi-realtime-ai__interval-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- 角色编辑器（美化版） ---------- */
+
+.zhichi-char-editor {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zhichi-char-editor__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  animation: zhichi-fade-in 0.2s ease-out;
+}
+
+.zhichi-char-editor__dialog {
+  position: relative;
+  width: min(560px, 92vw);
+  max-height: 88vh;
+  background: var(--zhichi-bg-card);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(124, 158, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: zhichi-dialog-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes zhichi-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes zhichi-dialog-in {
+  from { opacity: 0; transform: scale(0.92) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.zhichi-char-editor__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  background: linear-gradient(135deg, rgba(124, 158, 255, 0.1), rgba(255, 183, 197, 0.08));
+  border-bottom: 1px solid var(--zhichi-border);
+}
+
+.zhichi-char-editor__header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zhichi-char-editor__header-title svg {
+  color: var(--zhichi-primary);
+}
+
+.zhichi-char-editor__header-title h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--zhichi-text);
+}
+
+.zhichi-char-editor__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--zhichi-radius-full);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--zhichi-text-sub);
+  transition: background 0.15s, color 0.15s;
+}
+
+.zhichi-char-editor__close:hover {
+  background: rgba(255, 138, 154, 0.12);
+  color: var(--zhichi-danger);
+}
+
+.zhichi-char-editor__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 头像预览区 */
+.zhichi-char-editor__avatar-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(124, 158, 255, 0.06), rgba(255, 183, 197, 0.06));
+  border-radius: var(--zhichi-radius-md);
+}
+
+.zhichi-char-editor__avatar-preview {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--zhichi-radius-full);
+  overflow: hidden;
+  background: var(--zhichi-bg);
+  border: 3px solid #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.zhichi-char-editor__avatar-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.zhichi-char-editor__avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 28px;
+  color: var(--zhichi-primary);
+  font-weight: 600;
+}
+
+.zhichi-char-editor__avatar-tip {
+  margin: 0;
+  font-size: 12px;
+  color: var(--zhichi-text-sub);
+  line-height: 1.5;
+}
+
+/* 分区 */
+.zhichi-char-editor__section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.zhichi-char-editor__section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--zhichi-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.zhichi-char-editor__section-title svg {
+  color: var(--zhichi-primary);
+}
+
+/* ---------- AI 生成角色 ---------- */
+
+.zhichi-char-editor__forge {
+  background: linear-gradient(
+    135deg,
+    rgba(124, 158, 255, 0.08),
+    rgba(255, 183, 197, 0.08)
+  );
+  border: 1px solid rgba(124, 158, 255, 0.25);
+}
+
+.zhichi-char-editor__forge-hint {
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--zhichi-text-sub);
+}
+
+.zhichi-char-editor__forge-row {
+  display: flex;
+  gap: 8px;
+}
+
+.zhichi-char-editor__forge-row .zhichi-char-editor__input {
+  flex: 1;
+}
+
+.zhichi-char-editor__forge-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--zhichi-radius-md);
+  background: var(--zhichi-primary);
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.zhichi-char-editor__forge-btn:hover:not(:disabled) {
+  background: var(--zhichi-primary-dark);
+}
+
+.zhichi-char-editor__forge-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 生成中的"取消"：次要按钮样式，别和主操作抢注意力 */
+.zhichi-char-editor__forge-btn--ghost {
+  background: transparent;
+  border: 1px solid var(--zhichi-border);
+  color: var(--zhichi-text-sub);
+}
+
+.zhichi-char-editor__forge-btn--ghost:hover:not(:disabled) {
+  background: var(--zhichi-bg-soft);
+  color: var(--zhichi-text);
+}
+
+.zhichi-char-editor__forge-msg {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--zhichi-text-sub);
+}
+
+.zhichi-char-editor__forge-msg--progress {
+  color: var(--zhichi-primary);
+}
+
+/* 多版本切换：生成过不止一版时才出现 */
+.zhichi-char-editor__forge-versions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--zhichi-text-sub);
+}
+
+.zhichi-char-editor__forge-versions button {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--zhichi-border);
+  border-radius: var(--zhichi-radius-full);
+  background: var(--zhichi-bg-card);
+  color: var(--zhichi-text-sub);
+  font-size: 11px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.zhichi-char-editor__forge-versions button:hover:not(:disabled) {
+  background: var(--zhichi-bg-soft);
+  color: var(--zhichi-text);
+}
+
+.zhichi-char-editor__forge-versions button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* 表单字段 */
+.zhichi-char-editor__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.zhichi-char-editor__field-label {
+  font-size: 12px;
+  color: var(--zhichi-text-sub);
+  font-weight: 500;
+}
+
+.zhichi-char-editor__input,
+.zhichi-char-editor__select,
+.zhichi-char-editor__textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--zhichi-border);
+  border-radius: var(--zhichi-radius-sm);
+  font-size: 14px;
+  background: var(--zhichi-bg);
+  color: var(--zhichi-text);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
+}
+
+.zhichi-char-editor__input:focus,
+.zhichi-char-editor__select:focus,
+.zhichi-char-editor__textarea:focus {
+  border-color: var(--zhichi-primary);
+  box-shadow: 0 0 0 3px rgba(124, 158, 255, 0.15);
+}
+
+.zhichi-char-editor__textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.5;
+}
+
+/* 最终提示词预览：一眼看到"实际发出去的人设长什么样" */
+.zhichi-char-editor__preview-toggle {
+  align-self: flex-start;
+  padding: 6px 12px;
+  border: 1px dashed var(--zhichi-border);
+  border-radius: var(--zhichi-radius-sm);
+  background: transparent;
+  color: var(--zhichi-primary-dark);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.zhichi-char-editor__preview-toggle:hover {
+  border-color: var(--zhichi-primary-light);
+}
+
+.zhichi-char-editor__preview {
+  margin: 0;
+  padding: 10px 12px;
+  max-height: 260px;
+  overflow: auto;
+  border-radius: var(--zhichi-radius-sm);
+  background: var(--zhichi-bg-soft);
+  color: var(--zhichi-text-main);
+  font-family: SFMono-Regular, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.zhichi-char-editor__preview-hint {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--zhichi-text-mute);
+}
+
+.zhichi-char-editor__field--checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--zhichi-text-sub);
+  cursor: pointer;
+}
+
+.zhichi-char-editor__field--checkbox input {
+  cursor: pointer;
+}
+
+.zhichi-char-editor__schedule-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* 忙碌时段：一行 = 开始 / 结束 / 文案 / 删除 */
+.zhichi-char-editor__busy-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.2fr 32px;
+  gap: 6px;
+  align-items: center;
+}
+
+.zhichi-char-editor__busy-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  border: 1px solid var(--zhichi-border);
+  border-radius: var(--zhichi-radius-sm);
+  background: var(--zhichi-bg-card);
+  color: var(--zhichi-text-mute);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.zhichi-char-editor__busy-remove:hover {
+  color: var(--zhichi-danger);
+  border-color: var(--zhichi-danger);
+}
+
+.zhichi-char-editor__busy-add {
+  align-self: flex-start;
+  padding: 6px 12px;
+  border: 1px dashed var(--zhichi-border);
+  border-radius: var(--zhichi-radius-sm);
+  background: transparent;
+  color: var(--zhichi-text-sub);
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.zhichi-char-editor__busy-add:hover {
+  color: var(--zhichi-primary-dark);
+  border-color: var(--zhichi-primary-light);
+}
+
+.zhichi-char-editor__busy-hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--zhichi-text-mute);
+}
+
+/* 性格模板网格 */
+.zhichi-char-editor__archetypes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.zhichi-char-editor__archetype {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  background: var(--zhichi-bg);
+  border: 2px solid transparent;
+  border-radius: var(--zhichi-radius-md);
+  cursor: pointer;
+  transition: all 0.18s;
+  text-align: center;
+}
+
+.zhichi-char-editor__archetype:hover {
+  background: rgba(124, 158, 255, 0.06);
+  transform: translateY(-2px);
+}
+
+.zhichi-char-editor__archetype--active {
+  border-color: var(--zhichi-primary);
+  background: rgba(124, 158, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(124, 158, 255, 0.15);
+}
+
+.zhichi-char-editor__archetype-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.zhichi-char-editor__archetype-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--zhichi-text);
+}
+
+.zhichi-char-editor__archetype-desc {
+  font-size: 11px;
+  color: var(--zhichi-text-sub);
+  line-height: 1.4;
+}
+
+/* 底部操作 */
+.zhichi-char-editor__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 22px;
+  border-top: 1px solid var(--zhichi-border);
+  background: var(--zhichi-bg-soft);
+}
+
+.zhichi-char-editor__btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border: none;
+  border-radius: var(--zhichi-radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s;
+  background: transparent;
+  color: var(--zhichi-text-sub);
+}
+
+.zhichi-char-editor__btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--zhichi-text);
+}
+
+/* 导出角色卡：把"取消"挤到右边，导出需要离它远一点 */
+.zhichi-char-editor__btn--ghost {
+  margin-right: auto;
+  font-size: 13px;
+  color: var(--zhichi-primary);
+}
+
+/* 删除角色：同样靠左，但用警示色与"保存"拉开距离 */
+.zhichi-char-editor__btn--danger {
+  font-size: 13px;
+  color: #d95361;
+}
+
+.zhichi-char-editor__btn--danger:hover {
+  background: rgba(217, 83, 97, 0.1);
+  border-color: rgba(217, 83, 97, 0.35);
+  color: #c43f4e;
+}
+
+/* ---------- 回复风格 ---------- */
+
+/* ---------- 本地图片（头像 / 立绘） ---------- */
+
+.zhichi-char-editor__image-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.zhichi-char-editor__image-btn {
+  padding: 6px 12px;
+  border: 1.5px dashed var(--zhichi-primary-light);
+  border-radius: var(--zhichi-radius-sm);
+  background: var(--zhichi-bg-soft);
+  color: var(--zhichi-primary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, border-style 0.15s;
+}
+
+.zhichi-char-editor__image-btn:hover {
+  background: var(--zhichi-primary-light);
+  border-style: solid;
+}
+
+.zhichi-char-editor__image-hint {
+  font-size: 11px;
+  color: var(--zhichi-text-mute);
+}
+
+.zhichi-char-editor__image-error {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--zhichi-danger);
+}
+
+.zhichi-char-editor__sprite-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+}
+
+/* 情绪覆盖提示：一眼看出还缺哪几种 */
+.zhichi-char-editor__sprite-coverage {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--zhichi-text-sub);
+}
+
+.zhichi-char-editor__sprite-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--zhichi-divider);
+  border-radius: var(--zhichi-radius-sm);
+  background: var(--zhichi-bg-card);
+}
+
+.zhichi-char-editor__sprite-thumb {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: var(--zhichi-radius-sm);
+  background: var(--zhichi-bg-soft);
+}
+
+.zhichi-char-editor__sprite-emotion {
+  flex: 1;
+  padding: 4px 6px;
+  border: 1px solid var(--zhichi-divider);
+  border-radius: var(--zhichi-radius-sm);
+  background: var(--zhichi-bg-card);
+  font-size: 13px;
+  color: var(--zhichi-text);
+}
+
+.zhichi-char-editor__sprite-remove {
+  padding: 4px 8px;
+  border: none;
+  border-radius: var(--zhichi-radius-sm);
+  background: transparent;
+  color: var(--zhichi-danger);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.zhichi-char-editor__sprite-remove:hover {
+  background: rgba(255, 138, 154, 0.12);
+}
+
+.zhichi-char-editor__hint {
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--zhichi-text-mute);
+}
+
+.zhichi-char-editor__length-options {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.zhichi-char-editor__length-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 6px;
+  border: 1.5px solid var(--zhichi-divider);
+  border-radius: var(--zhichi-radius-sm);
+  background: var(--zhichi-bg-card);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.zhichi-char-editor__length-btn:hover {
+  border-color: var(--zhichi-primary-light);
+}
+
+.zhichi-char-editor__length-btn--active {
+  border-color: var(--zhichi-primary);
+  background: rgba(124, 158, 255, 0.08);
+}
+
+.zhichi-char-editor__length-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--zhichi-text);
+}
+
+.zhichi-char-editor__length-desc {
+  font-size: 11px;
+  color: var(--zhichi-text-mute);
+}
+
+.zhichi-char-editor__toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--zhichi-text-sub);
+  cursor: pointer;
+}
+
+.zhichi-char-editor__btn--save {
+  background: var(--zhichi-primary);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(124, 158, 255, 0.3);
+}
+
+.zhichi-char-editor__btn--save:hover {
+  background: #6a8aeb;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(124, 158, 255, 0.4);
+}
+
+.zhichi-char-editor__btn--save:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* 小屏适配 */
+@media (max-width: 480px) {
+  .zhichi-char-editor__archetypes {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .zhichi-char-editor__schedule-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Session List ---------- */
+
+/* ---------- 会话列表：多选管理 ---------- */
+
+.zhichi-session-list-wrap {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.zhichi-session-list-wrap > .zhichi-session-list {
+  flex: 1;
+}
+
+.zhichi-session-list__bulk-head {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--zhichi-bg-card);
+  border-bottom: 1px solid var(--zhichi-divider);
+}
+
+.zhichi-session-list__bulk-cancel {
+  padding: 4px 6px;
+  border: none;
+  border-radius: var(--zhichi-radius-sm);
+  background: transparent;
+  color: var(--zhichi-text-sub);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.zhichi-session-list__bulk-cancel:hover {
+  background: var(--zhichi-bg-soft);
+  color: var(--zhichi-text);
+}
+
+.zhichi-session-list__bulk-count {
+  flex: 1;
+  /* 抵消左侧「取消」宽度，让计数在侧栏里视觉居中 */
+  margin-right: 44px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--zhichi-text-sub);
+}
+
+.zhichi-session-list__checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--zhichi-border);
+  border-radius: 50%;
+  color: #fff;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.zhichi-session-list__checkbox--checked {
+  background: var(--zhichi-primary);
+  border-color: var(--zhichi-primary);
+}
+
+.zhichi-session-list__item--selected {
+  background: rgba(124, 158, 255, 0.1);
+}
+
+.zhichi-session-list__bulk-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--zhichi-bg-card);
+  border-top: 1px solid var(--zhichi-divider);
+  box-shadow: 0 -4px 16px rgba(122, 100, 140, 0.08);
+}
+
+.zhichi-session-list__bulk-action {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--zhichi-border);
+  border-radius: var(--zhichi-radius-md);
+  background: var(--zhichi-bg-card);
+  color: var(--zhichi-text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+}
+
+.zhichi-session-list__bulk-action:hover:not(:disabled) {
+  background: var(--zhichi-bg-soft);
+}
+
+.zhichi-session-list__bulk-action:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.zhichi-session-list__bulk-action--danger {
+  border-color: transparent;
+  background: var(--zhichi-danger);
+  color: #fff;
+}
+
+.zhichi-session-list__bulk-action--danger:hover:not(:disabled) {
+  background: #ff7586;
+}
+
+.zhichi-session-list {
+  padding: 4px 0;
+}
+
+.zhichi-session-list__empty {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--zhichi-text-sub);
+  font-size: 14px;
+}
+
+.zhichi-session-list__empty-hint {
+  font-size: 12px;
+  margin-top: 8px;
+  color: var(--zhichi-text-mute);
+}
+
+.zhichi-session-list__item {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+  position: relative;
+}
+
+.zhichi-session-list__item:hover,
+.zhichi-session-list__item-wrap:hover {
+  background: rgba(124, 158, 255, 0.06);
+}
+
+.zhichi-session-list__item--active,
+.zhichi-session-list__item--active .zhichi-session-list__item {
+  background: rgba(124, 158, 255, 0.12);
+}
+
+.zhichi-session-list__item--active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: var(--zhichi-radius-full);
+  background: var(--zhichi-primary);
+}
+
+.zhichi-session-list__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--zhichi-radius-md);
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--zhichi-primary-light), var(--zhichi-accent-light));
+  position: relative;
+  overflow: visible;
+}
+
+.zhichi-session-list__avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--zhichi-radius-md);
+  object-fit: cover;
+}
+
+.zhichi-session-list__avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 18px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.zhichi-session-list__badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--zhichi-radius-full);
+  background: var(--zhichi-danger);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(255, 138, 154, 0.4);
+  border: 2px solid var(--zhichi-bg-soft);
+}
+
+.zhichi-session-list__content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+
+.zhichi-session-list__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.zhichi-session-list__name {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--zhichi-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zhichi-session-list__time {
+  font-size: 11px;
+  color: var(--zhichi-text-mute);
+  flex-shrink: 0;
+}
+
+.zhichi-session-list__preview {
+  font-size: 13px;
+  color: var(--zhichi-text-sub);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* "对方正在输入…"：会话列表里换掉预览那一行 */
+.zhichi-session-list__typing {
+  color: var(--zhichi-primary-dark);
+}
+
+/* ---------- Contacts ---------- */
+
+.zhichi-contacts {
+  padding: 4px 0;
+}
+
+.zhichi-contacts__add-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--zhichi-text);
+  transition: background 0.15s;
+}
+
+.zhichi-contacts__add-btn:hover {
+  background: rgba(124, 158, 255, 0.06);
+}
+
+/* 导入角色卡（次要入口，视觉上比"新建角色"轻一档） */
+.zhichi-contacts__import-btn {
+  display: block;
+  width: calc(100% - 32px);
+  margin: 0 16px 8px;
+  padding: 8px 12px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--zhichi-primary);
+  background: var(--zhichi-bg-soft);
+  border: 1px dashed var(--zhichi-primary-light);
+  border-radius: var(--zhichi-radius-sm);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.zhichi-contacts__import-btn:hover {
+  background: var(--zhichi-primary-light);
+  border-style: solid;
+}
+
+.zhichi-contacts__import-result {
+  margin: 0 16px 8px;
+  padding: 8px 10px;
+  border-radius: var(--zhichi-radius-sm);
+  background: rgba(126, 201, 159, 0.15);
+  color: #4a8a5f;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.zhichi-contacts__import-result--error {
+  background: rgba(224, 122, 122, 0.14);
+  color: #b45555;
+}
+
+.zhichi-contacts__add-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--zhichi-radius-md);
+  background: linear-gradient(135deg, var(--zhichi-primary), var(--zhichi-accent));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--zhichi-shadow-sm);
+}
+
+.zhichi-contacts__empty {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--zhichi-text-sub);
+  font-size: 14px;
+}
+
+.zhichi-contacts__item {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.zhichi-contacts__item:hover {
+  background: rgba(124, 158, 255, 0.06);
+}
+
+.zhichi-contacts__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--zhichi-radius-md);
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--zhichi-primary-light), var(--zhichi-accent-light));
+  overflow: hidden;
+}
+
+.zhichi-contacts__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.zhichi-contacts__avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 18px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.zhichi-contacts__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+
+.zhichi-contacts__name {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--zhichi-text);
+}
+
+.zhichi-contacts__bio {
+  font-size: 12px;
+  color: var(--zhichi-text-sub);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Settings ---------- */
+
+.zhichi-settings {
+  padding: 20px 16px;
+}
+
+.zhichi-settings__section {
+  margin-bottom: 28px;
+  background: var(--zhichi-bg-card);
+  border-radius: var(--zhichi-radius-md);
+  padding: 16px;
+  box-shadow: var(--zhichi-shadow-sm);
+}
+
+.zhichi-settings__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--zhichi-text);
+}
+
+.zhichi-settings__title svg {
+  color: var(--zhichi-primary);
+}
+
+.zhichi-settings__field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: var(--zhichi-text);
+}
+
+.zhichi-settings__field--checkbox {
+  justify-content: flex-start;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.zhichi-settings__field-label {
+  flex-shrink: 0;
+  font-weight: 500;
+  color: var(--zhichi-text-sub);
+  min-width: 70px;
+}
+
+.zhichi-settings__input,
+.zhichi-settings__select,
+.zhichi-settings textarea {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--zhichi-border);
+  border-radius: var(--zhichi-radius-sm);
+  font-size: 13px;
+  outline: none;
+  background: var(--zhichi-bg);
+  color: var(--zhichi-text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
+}
+
+.zhichi-settings__input:focus,
+.zhichi-settings__select:focus,
+.zhichi-settings textarea:focus {
+  border-color: var(--zhichi-primary);
+  box-shadow: 0 0 0 3px rgba(124, 158, 255, 0.15);
+}
+
+.zhichi-settings__slider {
+  width: 140px;
+  accent-color: var(--zhichi-primary);
+}
+
+.zhichi-settings__help-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--zhichi-primary);
+  text-decoration: none;
+  margin-bottom: 14px;
+  margin-left: 70px;
+}
+
+.zhichi-settings__help-link:hover {
+  text-decoration: underline;
+}
+
+.zhichi-settings__save-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+  padding: 10px;
+  background: linear-gradient(135deg, var(--zhichi-primary), var(--zhichi-primary-dark));
+  color: #fff;
+  border: none;
+  border-radius: var(--zhichi-radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: var(--zhichi-shadow-sm);
+}
+
+.zhichi-settings__save-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--zhichi-shadow-md);
+}
+
+.zhichi-settings__save-btn:active {
+  transform: translateY(0);
+}
+
+.zhichi-settings__test-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+  padding: 10px;
+  background: var(--zhichi-bg-card);
+  color: var(--zhichi-primary);
+  border: 1.5px solid var(--zhichi-primary);
+  border-radius: var(--zhichi-radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.zhichi-settings__test-btn:hover:not(:disabled) {
+  background: var(--zhichi-primary-light);
+  transform: translateY(-1px);
+}
+
+.zhichi-settings__test-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.zhichi-settings__btn-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.zhichi-settings__test-result {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--zhichi-radius-sm);
+  font-size: 13px;
+  margin-top: 12px;
+  animation: zhichi-fade-in 0.2s ease-out;
+}
+
+.zhichi-settings__test-result--success {
+  background: rgba(126, 201, 159, 0.15);
+  color: #4a8a5f;
+  border: 1px solid rgba(126, 201, 159, 0.4);
+}
+
+.zhichi-settings__test-result--error {
+  background: rgba(255, 138, 154, 0.12);
+  color: #c44a5a;
+  border: 1px solid rgba(255, 138, 154, 0.35);
+}
+
+.zhichi-settings__test-result-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.zhichi-settings__test-result-text code {
+  font-family: "SF Mono", "Consolas", monospace;
+  font-size: 11px;
+  word-break: break-all;
+  opacity: 0.85;
+}
+
+.zhichi-settings__saved-toast {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(126, 201, 159, 0.15);
+  color: #4a8a5f;
+  border-radius: var(--zhichi-radius-sm);
+  font-size: 13px;
+  margin-top: 8px;
+  animation: zhichi-fade-in 0.2s ease-out;
+}
+
+.zhichi-settings__hint {
+  font-size: 12px;
+  color: var(--zhichi-text-mute);
+  margin-top: 8px;
+  text-align: center;
+}
+
+/* ---------- 聊天记录搜索 ---------- */
+
+.zhichi-message-search {
+  padding: 10px 12px 4px;
+}
+
+.zhichi-message-search__box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  background: var(--zhichi-bg-soft);
+  border: 1px solid transparent;
+  border-radius: var(--zhichi-radius-sm);
+  color: var(--zhichi-text-mute);
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.zhichi-message-search__box:focus-within {
+  background: var(--zhichi-bg-card);
+  border-color: var(--zhichi-primary-light);
+}
+
+.zhichi-message-search__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  color: var(--zhichi-text-main);
+}
+
+.zhichi-message-search__input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.zhichi-message-search__clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border: none;
+  border-radius: 50%;
+  background: var(--zhichi-text-mute);
+  color: #fff;
+  cursor: pointer;
+}
+
+.zhichi-message-search__results {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 0 12px;
+}
+
+.zhichi-message-search__empty,
+.zhichi-message-search__more {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--zhichi-text-mute);
+  text-align: center;
+  line-height: 1.6;
+}
+
+.zhichi-message-search__hit {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  padding: 8px 8px;
+  border: none;
+  border-radius: var(--zhichi-radius-sm);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.zhichi-message-search__hit:hover {
+  background: var(--zhichi-bg-soft);
+}
+
+.zhichi-message-search__hit-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.zhichi-message-search__hit-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--zhichi-text-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zhichi-message-search__hit-time {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--zhichi-text-mute);
+}
+
+.zhichi-message-search__hit-text {
+  font-size: 12px;
+  color: var(--zhichi-text-sub);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.zhichi-message-search__hit-self {
+  display: inline-block;
+  margin-right: 4px;
+  padding: 0 4px;
+  border-radius: 3px;
+  background: var(--zhichi-primary-light);
+  color: #fff;
+  font-size: 10px;
+}
+
+.zhichi-message-search__mark {
+  background: transparent;
+  color: var(--zhichi-primary-dark);
+  font-weight: 600;
+}
+
+/* 从搜索结果跳转过来时，目标消息闪一下 */
+.wechat-msg-row--highlight > * {
+  animation: zhichi-msg-highlight 2.2s ease-out;
+}
+
+/* 回到最新：窗口平移到很久以前时的出口 */
+.wechat-chat-session__back-to-latest {
+  display: flex;
+  justify-content: center;
+  padding: 0 0 8px;
+}
+
+.wechat-chat-session__back-to-latest-btn {
+  padding: 5px 14px;
+  border: 1px solid var(--zhichi-primary-light);
+  border-radius: 999px;
+  background: var(--zhichi-bg-card);
+  color: var(--zhichi-primary);
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: var(--zhichi-shadow-sm);
+  transition: transform 0.15s, background 0.15s;
+}
+
+.wechat-chat-session__back-to-latest-btn:hover {
+  background: var(--zhichi-primary-light);
+  transform: translateY(-1px);
+}
+
+/* ---------- 重新生成 ---------- */
+
+.wechat-chat-session__regenerate {
+  display: flex;
+  justify-content: center;
+  padding: 0 0 8px;
+}
+
+.wechat-chat-session__regenerate-btn {
+  padding: 4px 12px;
+  border: 1px solid var(--zhichi-divider);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--zhichi-text-mute);
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, transform 0.15s;
+}
+
+.wechat-chat-session__regenerate-btn:hover {
+  color: var(--zhichi-primary);
+  border-color: var(--zhichi-primary-light);
+  transform: translateY(-1px);
+}
+
+.wechat-chat-session__regenerate-btn:active {
+  transform: translateY(0);
+}
+
+@keyframes zhichi-msg-highlight {
+  0% {
+    background-color: rgba(124, 158, 255, 0.28);
+  }
+  60% {
+    background-color: rgba(124, 158, 255, 0.16);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* ---------- 数据备份 ---------- */
+
+.zhichi-settings__backup-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.zhichi-settings__backup-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+  padding: 10px;
+  background: var(--zhichi-bg-card);
+  color: var(--zhichi-primary);
+  border: 1.5px solid var(--zhichi-primary);
+  border-radius: var(--zhichi-radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.zhichi-settings__backup-btn:hover:not(:disabled):not(.zhichi-settings__backup-btn--busy) {
+  background: var(--zhichi-primary-light);
+  transform: translateY(-1px);
+}
+
+.zhichi-settings__backup-btn:disabled,
+.zhichi-settings__backup-btn--busy {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.zhichi-settings__backup-result {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: var(--zhichi-radius-sm);
+  background: rgba(126, 201, 159, 0.15);
+  color: #4a8a5f;
+  font-size: 12px;
+  line-height: 1.5;
+  animation: zhichi-fade-in 0.2s ease-out;
+}
+
+.zhichi-settings__backup-result--error {
+  background: rgba(224, 122, 122, 0.14);
+  color: #b45555;
+}
+
+.zhichi-settings__spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: zhichi-spin 0.6s linear infinite;
+}
+
+@keyframes zhichi-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes zhichi-fade-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Input Bar ---------- */
+
+.zhichi-input-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 60px;
+  padding: 0 14px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--zhichi-divider);
+  /* 表情面板以它为定位基准（浮在输入栏上方，不挤压消息区） */
+  position: relative;
+}
+
+/* ---------- 表情面板（用户发贴图） ---------- */
+
+.zhichi-sticker-picker {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 14px;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: repeat(4, 48px);
+  gap: 6px;
+  padding: 10px;
+  background: var(--zhichi-bg-card);
+  border: 1px solid var(--zhichi-border);
+  border-radius: var(--zhichi-radius-md);
+  box-shadow: var(--zhichi-shadow-lg);
+  animation: zhichi-menu-pop 0.12s ease-out;
+}
+
+.zhichi-sticker-picker__item {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: none;
+  border-radius: var(--zhichi-radius-sm);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.zhichi-sticker-picker__item:hover {
+  background: var(--zhichi-bg-soft);
+  transform: translateY(-2px);
+}
+
+.zhichi-sticker-picker__item img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.zhichi-input-bar__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 60px;
+}
+
+.zhichi-input-bar__quote {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 6px 8px;
+  border-radius: var(--zhichi-radius-sm);
+  background: var(--zhichi-bg-soft);
+}
+
+.zhichi-input-bar__quote-bar {
+  width: 3px;
+  align-self: stretch;
+  border-radius: var(--zhichi-radius-full);
+  background: var(--zhichi-primary);
+}
+
+.zhichi-input-bar__quote-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.zhichi-input-bar__quote-name {
+  font-size: 11px;
+  color: var(--zhichi-text);
+  font-weight: 500;
+}
+
+.zhichi-input-bar__quote-text {
+  font-size: 12px;
+  color: var(--zhichi-text-sub);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zhichi-input-bar__quote-cancel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: var(--zhichi-radius-full);
+  background: transparent;
+  color: var(--zhichi-text-mute);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.zhichi-input-bar__quote-cancel:hover {
+  background: rgba(122, 100, 140, 0.12);
+  color: var(--zhichi-text);
+}
+
+.zhichi-input-bar[data-keyboard-open="true"] {
+  position: sticky;
+  bottom: 0;
+}
+
+.zhichi-input-bar__icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--zhichi-radius-full);
+  background: var(--zhichi-bg-soft);
+  border: none;
+  cursor: pointer;
+  color: var(--zhichi-text-sub);
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.zhichi-input-bar__icon-btn:hover {
+  background: var(--zhichi-primary-light);
+  color: var(--zhichi-primary);
+  transform: scale(1.05);
+}
+
+.zhichi-input-bar__textarea {
+  flex: 1;
+  border: 1px solid var(--zhichi-border);
+  border-radius: var(--zhichi-radius-full);
+  padding: 8px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+  background: var(--zhichi-bg-card);
+  color: var(--zhichi-text);
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  max-height: 100px;
+}
+
+.zhichi-input-bar__textarea:focus {
+  border-color: var(--zhichi-primary);
+  box-shadow: 0 0 0 3px rgba(124, 158, 255, 0.15);
+}
+
+.zhichi-input-bar__textarea:disabled {
+  background: var(--zhichi-bg-soft);
+  color: var(--zhichi-text-mute);
+}
+
+.zhichi-input-bar__send {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--zhichi-radius-full);
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  background: linear-gradient(135deg, var(--zhichi-primary), var(--zhichi-primary-dark));
+  color: #fff;
+  box-shadow: var(--zhichi-shadow-sm);
+}
+
+.zhichi-input-bar__send:hover {
+  transform: scale(1.05) rotate(-5deg);
+  box-shadow: var(--zhichi-shadow-md);
+}
+
+.zhichi-input-bar__send:disabled {
+  background: var(--zhichi-text-mute);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.zhichi-input-bar__send--idle {
+  background: var(--zhichi-bg-soft);
+  color: var(--zhichi-text-mute);
+  cursor: default;
+  box-shadow: none;
+}
+
+.zhichi-input-bar__send--idle:hover {
+  transform: none;
+}
+
+/* ---------- Prompt Panel ---------- */
+
+.zhichi-prompt-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zhichi-prompt-panel__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(58, 58, 74, 0.4);
+  backdrop-filter: blur(4px);
+}
+
+.zhichi-prompt-panel__dialog {
+  position: relative;
+  z-index: 1;
+  width: 480px;
+  max-width: 92vw;
+  max-height: 80vh;
+  background: var(--zhichi-bg-card);
+  border-radius: var(--zhichi-radius-lg);
+  box-shadow: var(--zhichi-shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: zhichi-dialog-in 0.2s ease-out;
+}
+
+@keyframes zhichi-dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.zhichi-prompt-panel__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--zhichi-divider);
+}
+
+.zhichi-prompt-panel__header h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--zhichi-text);
+}
+
+.zhichi-prompt-panel__header h2 svg {
+  color: var(--zhichi-primary);
+}
+
+.zhichi-prompt-panel__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--zhichi-radius-full);
+  background: var(--zhichi-bg-soft);
+  border: none;
+  cursor: pointer;
+  color: var(--zhichi-text-sub);
+  transition: all 0.15s;
+}
+
+.zhichi-prompt-panel__close:hover {
+  background: var(--zhichi-danger);
+  color: #fff;
+}
+
+.zhichi-prompt-panel__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+
+/* ---------- 提示词预设 ---------- */
+
+.zhichi-prompt-panel__presets {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.zhichi-prompt-panel__presets-label {
+  font-size: 12px;
+  color: var(--zhichi-text-mute);
+}
+
+.zhichi-prompt-panel__preset {
+  padding: 4px 10px;
+  border: 1px dashed var(--zhichi-primary-light);
+  border-radius: 999px;
+  background: var(--zhichi-bg-soft);
+  color: var(--zhichi-primary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, border-style 0.15s;
+}
+
+.zhichi-prompt-panel__preset:hover {
+  background: var(--zhichi-primary-light);
+  border-style: solid;
+}
+
+.zhichi-prompt-panel__create-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, var(--zhichi-primary), var(--zhichi-accent));
+  color: #fff;
+  border: none;
+  border-radius: var(--zhichi-radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: var(--zhichi-shadow-sm);
+}
+
+.zhichi-prompt-panel__create-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--zhichi-shadow-md);
+}
+
+.zhichi-prompt-panel__empty {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--zhichi-text-sub);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.zhichi-prompt-panel__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: var(--zhichi-bg-soft);
+  border-radius: var(--zhichi-radius-md);
+  transition: background 0.15s;
+}
+
+.zhichi-prompt-panel__item:hover {
+  background: rgba(124, 158, 255, 0.08);
+}
+
+.zhichi-prompt-panel__item-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.zhichi-prompt-panel__item-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--zhichi-text);
+}
+
+.zhichi-prompt-panel__item-preview {
+  font-size: 12px;
+  color: var(--zhichi-text-sub);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zhichi-prompt-panel__item-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.zhichi-prompt-panel__item-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: var(--zhichi-radius-sm);
+  background: var(--zhichi-bg-card);
+  border: 1px solid var(--zhichi-border);
+  color: var(--zhichi-text-sub);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.15s;
+}
+
+.zhichi-prompt-panel__item-btn:hover {
+  background: var(--zhichi-primary-light);
+  color: var(--zhichi-primary);
+  border-color: var(--zhichi-primary);
+}
+
+.zhichi-prompt-panel__item-btn--apply {
+  background: var(--zhichi-primary);
+  color: #fff;
+  border-color: var(--zhichi-primary);
+}
+
+.zhichi-prompt-panel__item-btn--apply:hover {
+  background: var(--zhichi-primary-dark);
+  color: #fff;
+}
+
+.zhichi-prompt-panel__item-btn--delete:hover {
+  background: var(--zhichi-danger);
+  color: #fff;
+  border-color: var(--zhichi-danger);
+}
+
+/* ---------- Prompt Editor ---------- */
+
+.zhichi-prompt-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.zhichi-prompt-editor__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px;
+  background: var(--zhichi-bg-soft);
+  border-radius: var(--zhichi-radius-md);
+}
+
+.zhichi-prompt-editor__tab {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: var(--zhichi-radius-sm);
+  background: transparent;
+  color: var(--zhichi-text-sub);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.zhichi-prompt-editor__tab:hover {
+  background: rgba(124, 158, 255, 0.08);
+  color: var(--zhichi-primary);
+}
+
+.zhichi-prompt-editor__tab--active {
+  background: var(--zhichi-bg-card);
+  color: var(--zhichi-primary);
+  font-weight: 600;
+  box-shadow: var(--zhichi-shadow-sm);
+}
+
+.zhichi-prompt-editor__tab-icon {
+  font-size: 14px;
+}
+
+.zhichi-prompt-editor__group {
+  padding: 12px;
+  background: var(--zhichi-bg-soft);
+  border-radius: var(--zhichi-radius-md);
+}
+
+.zhichi-prompt-editor__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--zhichi-text-sub);
+  font-weight: 500;
+}
+
+.zhichi-prompt-editor__input,
+.zhichi-prompt-editor__textarea {
+  padding: 8px 12px;
+  border: 1px solid var(--zhichi-border);
+  border-radius: var(--zhichi-radius-sm);
+  font-size: 13px;
+  outline: none;
+  background: var(--zhichi-bg);
+  color: var(--zhichi-text);
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.zhichi-prompt-editor__textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.6;
+}
+
+.zhichi-prompt-editor__input:focus,
+.zhichi-prompt-editor__textarea:focus {
+  border-color: var(--zhichi-primary);
+  box-shadow: 0 0 0 3px rgba(124, 158, 255, 0.15);
+}
+
+.zhichi-prompt-editor__footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.zhichi-prompt-editor__btn {
+  padding: 8px 20px;
+  border: 1px solid var(--zhichi-border);
+  border-radius: var(--zhichi-radius-sm);
+  background: var(--zhichi-bg-card);
+  color: var(--zhichi-text);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+
+.zhichi-prompt-editor__btn:hover {
+  background: var(--zhichi-bg-soft);
+}
+
+.zhichi-prompt-editor__btn--save {
+  background: linear-gradient(135deg, var(--zhichi-primary), var(--zhichi-primary-dark));
+  color: #fff;
+  border: none;
+  box-shadow: var(--zhichi-shadow-sm);
+}
+
+.zhichi-prompt-editor__btn--save:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--zhichi-shadow-md);
+}
+
+.zhichi-prompt-editor__btn--save:disabled {
+  background: var(--zhichi-text-mute);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* ---------- Character Editor ---------- */
+
+.wechat-character-editor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(58, 58, 74, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.wechat-character-editor__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--zhichi-divider);
+}
+
+.wechat-character-editor__header h2 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.wechat-character-editor__header button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--zhichi-radius-full);
+  background: var(--zhichi-bg-soft);
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--zhichi-text-sub);
+}
+
+.wechat-character-editor__body {
+  padding: 20px;
+  max-height: 60vh;
+  overflow-y: auto;
+  background: var(--zhichi-bg-card);
+  width: 400px;
+  max-width: 92vw;
+  border-radius: var(--zhichi-radius-lg);
+  box-shadow: var(--zhichi-shadow-lg);
+}
+
+.wechat-character-editor__schedule {
+  display: flex;
+  gap: 8px;
+}
+
+.wechat-character-editor__prompt {
+  font-family: inherit;
+  resize: vertical;
+}
+
+.wechat-character-editor__footer {
+  display: flex;
+  gap: 8px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--zhichi-divider);
+}
+
+.wechat-character-editor__footer button {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid var(--zhichi-border);
+  border-radius: var(--zhichi-radius-sm);
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--zhichi-text);
+  transition: all 0.15s;
+}
+
+.wechat-character-editor__footer button:hover {
+  background: var(--zhichi-bg-soft);
+}
+
+.wechat-character-editor__save {
+  background: linear-gradient(135deg, var(--zhichi-primary), var(--zhichi-primary-dark)) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: var(--zhichi-shadow-sm);
+}
+
+.wechat-character-editor__save:disabled {
+  background: var(--zhichi-text-mute) !important;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ---------- 消息气泡 ---------- */
+
+.wechat-msg {
+  display: flex;
+  margin-bottom: 16px;
+  gap: 8px;
+}
+
+.wechat-msg[data-self="true"] {
+  flex-direction: row-reverse;
+}
+
+.wechat-msg__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--zhichi-radius-md);
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--zhichi-primary-light), var(--zhichi-accent-light));
+  overflow: hidden;
+}
+
+.wechat-msg__avatar--self {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #7c9eff, #5a7aeb);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.wechat-msg__body {
+  max-width: 70%;
+  position: relative;
+}
+
+/* ---------- 引用回复 ---------- */
+
+.wechat-msg__quote {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 100%;
+  margin-bottom: 4px;
+  padding: 6px 10px;
+  border-left: 3px solid var(--zhichi-primary-light);
+  border-radius: var(--zhichi-radius-sm);
+  background: rgba(122, 100, 140, 0.07);
+  font-size: 12px;
+  line-height: 1.4;
+  overflow: hidden;
+}
+
+.wechat-msg__quote-name {
+  color: var(--zhichi-text-sub);
+  font-weight: 500;
+}
+
+.wechat-msg__quote-text {
+  color: var(--zhichi-text-sub);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 可点击的引用块（点它跳到被引用的那条消息） */
+.wechat-msg__quote--clickable {
+  border: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.wechat-msg__quote--clickable:hover {
+  background: rgba(122, 100, 140, 0.15);
+}
+
+/* ---------- 消息操作菜单（长按 / 右键） ---------- */
+
+.wechat-msg__actions {
+  position: absolute;
+  top: -4px;
+  z-index: 30;
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: var(--zhichi-radius-md);
+  background: rgba(58, 58, 74, 0.92);
+  box-shadow: var(--zhichi-shadow-md);
+  animation: zhichi-menu-pop 0.12s ease-out;
+}
+
+/* 自己发的消息靠右：菜单贴气泡左侧展开；对方消息反向 */
+.wechat-msg[data-self="true"] .wechat-msg__actions {
+  right: calc(100% + 8px);
+}
+
+.wechat-msg[data-self="false"] .wechat-msg__actions {
+  left: calc(100% + 8px);
+}
+
+.wechat-msg__action {
+  padding: 4px 10px;
+  border: none;
+  border-radius: var(--zhichi-radius-sm);
+  background: transparent;
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.wechat-msg__action:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* 删除这类不可逆操作：菜单里用警示色区分 */
+.wechat-msg__action--danger {
+  color: #ff9aa8;
+}
+
+.wechat-msg__action--danger:hover {
+  background: rgba(255, 138, 154, 0.22);
+}
+
+@keyframes zhichi-menu-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ---------- 编辑重发 ---------- */
+
+/* 编辑入口：贴在气泡左侧（自己发的消息靠右，所以放 left: 100% 外侧） */
+.wechat-msg__edit-btn {
+  position: absolute;
+  left: -26px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--zhichi-text-mute);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+}
+
+.wechat-msg:hover .wechat-msg__edit-btn {
+  opacity: 1;
+}
+
+.wechat-msg__edit-btn:hover {
+  color: var(--zhichi-primary);
+  background: rgba(124, 158, 255, 0.12);
+}
+
+.wechat-msg-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 240px;
+  padding: 10px 12px;
+  background: var(--zhichi-bg-card);
+  border: 1.5px solid var(--zhichi-primary-light);
+  border-radius: var(--zhichi-radius-md);
+  box-shadow: var(--zhichi-shadow-sm);
+}
+
+.wechat-msg-edit__input {
+  width: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  background: transparent;
+  font-size: 14px;
+  line-height: 1.6;
+  font-family: inherit;
+  color: var(--zhichi-text);
+}
+
+.wechat-msg-edit__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wechat-msg-edit__hint {
+  margin-right: auto;
+  font-size: 11px;
+  color: var(--zhichi-text-mute);
+}
+
+.wechat-msg-edit__btn {
+  padding: 4px 10px;
+  border: none;
+  border-radius: var(--zhichi-radius-sm);
+  background: transparent;
+  color: var(--zhichi-text-sub);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.wechat-msg-edit__btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--zhichi-text);
+}
+
+.wechat-msg-edit__btn--primary {
+  background: linear-gradient(135deg, var(--zhichi-primary), var(--zhichi-primary-dark));
+  color: #fff;
+}
+
+.wechat-msg-edit__btn--primary:hover:not(:disabled) {
+  color: #fff;
+  filter: brightness(1.05);
+}
+
+.wechat-msg-edit__btn--primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.wechat-msg-bubble {
+  padding: 10px 14px;
+  border-radius: var(--zhichi-radius-md);
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: break-word;
+  position: relative;
+}
+
+/* 复制成功提示（右键或长按气泡） */
+.wechat-msg__copied {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(58, 58, 74, 0.78);
+  color: #fff;
+  font-size: 11px;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: zhichi-copied-fade 1.2s ease-out;
+}
+
+@keyframes zhichi-copied-fade {
+  0% { opacity: 0; transform: translateX(-50%) translateY(4px); }
+  15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.wechat-msg-bubble--text,
+.wechat-msg-bubble--typing {
+  background: var(--zhichi-bubble-other);
+  box-shadow: var(--zhichi-shadow-sm);
+}
+
+.wechat-msg[data-self="true"] .wechat-msg-bubble--text,
+.wechat-msg[data-self="true"] .wechat-msg-bubble--typing {
+  background: var(--zhichi-bubble-self);
+}
+
+.wechat-msg-bubble--image img,
+.wechat-msg-bubble--sticker img {
+  display: block;
+  max-width: 100%;
+}
+
+/* 贴图不带气泡底（微信里表情就是一张图，没有白卡片） */
+.wechat-msg-bubble--sticker {
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.wechat-msg-bubble__sticker {
+  width: 96px;
+  height: 96px;
+  border-radius: var(--zhichi-radius-md);
+}
+
+.wechat-msg-bubble--system,
+.wechat-msg-bubble--recall {
+  background: transparent;
+  text-align: center;
+  color: var(--zhichi-text-sub);
+  font-size: 12px;
+}
+
+.wechat-msg-bubble__corrected-mark {
+  color: var(--zhichi-primary);
+  font-size: 11px;
+  margin-left: 4px;
+}
+
+.wechat-msg-bubble__dots {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.wechat-msg-bubble__dots .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--zhichi-text-mute);
+  animation: typing-bounce 1.2s infinite ease-in-out;
+}
+
+.dot--2 { animation-delay: 0.2s; }
+.dot--3 { animation-delay: 0.4s; }
+
+@keyframes typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+/* ---------- 消息状态 ---------- */
+
+.wechat-msg__status {
+  display: inline-block;
+  font-size: 12px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.wechat-msg__status--loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.wechat-msg__status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--zhichi-text-mute);
+  display: inline-block;
+  animation: zhichi-status-pulse 1s ease-in-out infinite;
+}
+
+@keyframes zhichi-status-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+.wechat-msg__status--error {
+  color: var(--zhichi-danger);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.wechat-msg__retry-btn {
+  background: none;
+  border: 1px solid var(--zhichi-danger);
+  border-radius: var(--zhichi-radius-sm);
+  color: var(--zhichi-danger);
+  font-size: 11px;
+  padding: 1px 6px;
+  cursor: pointer;
+}
+
+.wechat-msg-bubble--error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--zhichi-accent-light);
+  color: var(--zhichi-danger);
+  border: 1px solid var(--zhichi-accent);
+  border-radius: var(--zhichi-radius-md);
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.wechat-msg-bubble__error-icon {
+  font-size: 14px;
+}
+
+.wechat-msg-bubble__error-text {
+  flex: 1;
+}
+
+.wechat-msg-bubble__retry-btn {
+  background: var(--zhichi-danger);
+  color: #fff;
+  border: none;
+  border-radius: var(--zhichi-radius-sm);
+  padding: 3px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* ---------- 错误重试气泡 ---------- */
+
+.wechat-msg-bubble--error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--zhichi-accent-light);
+  color: var(--zhichi-danger);
+  border: 1px solid var(--zhichi-accent);
+  border-radius: var(--zhichi-radius-md);
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+/* ---------- AvatarWithSprite ---------- */
+
+.wechat-avatar {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.wechat-avatar__btn {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: none;
+  border-radius: var(--zhichi-radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--zhichi-primary-light), var(--zhichi-accent-light));
+  display: block;
+}
+
+.wechat-avatar__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.wechat-avatar__pinned-sprite {
+  position: fixed;
+  left: 16px;
+  bottom: 60px;
+  width: 200px;
+  height: 320px;
+  /* 可拖动：要能接指针事件；touch-action 防止手机端拖动变成页面滚动 */
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: none;
+  z-index: 100;
+  /* 开关固定立绘时淡入淡出 + 轻微上浮，而不是"啪"地出现 */
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.wechat-avatar__pinned-sprite[data-visible="false"] {
+  opacity: 0;
+  transform: translateY(14px) scale(0.98);
+  pointer-events: none;
+}
+
+.wechat-avatar__pinned-sprite[data-dragging="true"] {
+  cursor: grabbing;
+  opacity: 0.92;
+  transform: scale(1.02);
+}
+
+.wechat-avatar__pinned-sprite-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* 情绪切换的交叉淡入：新图叠上去淡入，旧图留在下面淡出 */
+.wechat-avatar__pinned-sprite-img--in {
+  animation: zhichi-sprite-fade-in 300ms ease;
+}
+
+.wechat-avatar__pinned-sprite-img--out {
+  animation: zhichi-sprite-fade-out 300ms ease forwards;
+}
+
+@keyframes zhichi-sprite-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes zhichi-sprite-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* ---------- SpriteViewer ---------- */
+
+.wechat-sprite-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  /* 纵向：大图 → 缩略图条 → 导航（横排时缩略图会插进图与导航之间） */
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.wechat-sprite-viewer__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(58, 58, 74, 0.7);
+  backdrop-filter: blur(8px);
+}
+
+.wechat-sprite-viewer__figure {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  max-width: 80vw;
+  max-height: 75vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 交叉淡入的舞台：两张图叠在同一位置，靠透明度过渡 */
+.wechat-sprite-viewer__stage {
+  position: relative;
+  /*
+   * 尺寸显式给定：里面的两层图是绝对定位的（交叉淡入要叠放），
+   * 不参与高度计算——只给 min-height 的话大图会溢出舞台、压到缩略图条上。
+   */
+  width: min(80vw, 460px);
+  height: 58vh;
+}
+
+.wechat-sprite-viewer__stage img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: var(--zhichi-radius-md);
+  box-shadow: var(--zhichi-shadow-lg);
+}
+
+/* 缩略图条：情绪多的时候直接跳转 */
+.wechat-sprite-viewer__thumbs {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  max-width: 80vw;
+  margin-top: 10px;
+}
+
+.wechat-sprite-viewer__thumb {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: var(--zhichi-radius-sm);
+  background: rgba(255, 255, 255, 0.14);
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.wechat-sprite-viewer__thumb:hover {
+  transform: translateY(-2px);
+}
+
+.wechat-sprite-viewer__thumb--active {
+  border-color: #fff;
+}
+
+.wechat-sprite-viewer__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wechat-sprite-viewer__caption {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  color: #fff;
+  font-size: 14px;
+}
+
+.wechat-sprite-viewer__emotion {
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--zhichi-radius-sm);
+  font-size: 12px;
+}
+
+.wechat-sprite-viewer__nav {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.wechat-sprite-viewer__nav button {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--zhichi-radius-full);
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.wechat-sprite-viewer__nav button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.wechat-sprite-viewer__nav button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.wechat-sprite-viewer__pin-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.wechat-sprite-viewer__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 1;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--zhichi-radius-full);
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---------- 聊天列表容器 ---------- */
+
+.wechat-chat-session {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* 错误重试气泡：悬浮在列表下方、输入栏上方 */
+.wechat-chat-session__error {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+}
+
+.wechat-chat-session__header {
+  display: none;
+}
+
+.wechat-chat-session__list {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.wechat-chat-session__scroller {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+
+.wechat-chat-session__scroller > div {
+  padding: 12px 16px 24px;
+}
+
+/*
+ * 消息行的屏外渲染跳过（content-visibility）。
+ * 效果类似虚拟滚动，但保留原生滚动语义：滚动高度稳定、行为可预测。
+ * contain-intrinsic-size 提供高度估算基准，浏览器渲染过后会自动记住真实高度。
+ */
+.wechat-msg-row {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 80px;
+}
+
+/* ---------- 时间分隔线（微信风格） ---------- */
+
+.wechat-time-divider {
+  text-align: center;
+  color: var(--zhichi-text-mute);
+  font-size: 12px;
+  padding: 10px 0;
+  user-select: none;
+}
+
+/* "以下为新消息"：微信里那条红字分隔线 */
+.wechat-unread-divider {
+  position: relative;
+  margin: 12px 0 10px;
+  text-align: center;
+  color: #d9534f;
+  font-size: 12px;
+  user-select: none;
+}
+
+.wechat-unread-divider::before,
+.wechat-unread-divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: calc(50% - 46px);
+  height: 1px;
+  background: rgba(217, 83, 79, 0.35);
+}
+
+.wechat-unread-divider::before {
+  left: 8px;
+}
+
+.wechat-unread-divider::after {
+  right: 8px;
+}
+
+/* ---------- 通讯录：行容器与编辑入口 ---------- */
+
+.zhichi-settings__pacing {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.zhichi-settings__pacing-row {
+  display: flex;
+  gap: 6px;
+}
+
+.zhichi-settings__pacing-btn {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: var(--zhichi-radius-sm);
+  border: 1px solid var(--zhichi-border);
+  background: var(--zhichi-bg-card);
+  color: var(--zhichi-text-sub);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.zhichi-settings__pacing-btn:hover {
+  border-color: var(--zhichi-primary-light);
+  color: var(--zhichi-primary-dark);
+  background: var(--zhichi-bg-soft);
+}
+
+.zhichi-contacts__row {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.zhichi-contacts__row .zhichi-contacts__item {
+  flex: 1;
+}
+
+.zhichi-contacts__edit-btn {
+  position: absolute;
+  right: 8px;
+  padding: 4px 10px;
+  border-radius: var(--zhichi-radius-sm);
+  border: 1px solid var(--zhichi-border);
+  background: var(--zhichi-bg-card);
+  color: var(--zhichi-text-sub);
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.zhichi-contacts__row:hover .zhichi-contacts__edit-btn {
+  opacity: 1;
+}
+
+.zhichi-contacts__edit-btn:hover {
+  border-color: var(--zhichi-primary-light);
+  color: var(--zhichi-primary-dark);
+}
+
+/* ---------- 新消息提示 pill ---------- */
+
+.wechat-new-message-pill {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, var(--zhichi-primary), var(--zhichi-primary-dark));
+  color: #fff;
+  border: none;
+  border-radius: var(--zhichi-radius-full);
+  padding: 6px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  z-index: 50;
+  box-shadow: var(--zhichi-shadow-md);
+  animation: zhichi-pill-fade-in 0.2s ease-out;
+}
+
+@keyframes zhichi-pill-fade-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ---------- Typing Indicator ---------- */
+
+.wechat-typing-bubble {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--zhichi-bubble-other);
+  border-radius: var(--zhichi-radius-md);
+  padding: 10px 14px;
+  box-shadow: var(--zhichi-shadow-sm);
+}
+
+.wechat-typing-bubble .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--zhichi-text-mute);
+  animation: typing-bounce 1.2s infinite ease-in-out;
+}
+
+/* ---------- 浮层 Tab（提示词 / 记忆 / 剧情） ---------- */
+
+.zhichi-prompt-panel__tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--zhichi-border);
+}
+
+.zhichi-prompt-panel__tab {
+  flex: 1;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--zhichi-text-sub);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.zhichi-prompt-panel__tab:hover {
+  color: var(--zhichi-primary-dark);
+}
+
+.zhichi-prompt-panel__tab--active {
+  color: var(--zhichi-primary-dark);
+  border-bottom-color: var(--zhichi-primary);
+  font-weight: 600;
+}
+
+.zhichi-prompt-panel__bind-hint {
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  border-radius: var(--zhichi-radius-sm);
+  background: var(--zhichi-bg-soft);
+  color: var(--zhichi-text-mute);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.zhichi-prompt-panel__item--bound {
+  border: 1px solid var(--zhichi-primary-light);
+  background: linear-gradient(180deg, #f5f9ff 0%, var(--zhichi-bg-card) 100%);
+}
+
+.zhichi-prompt-panel__item-btn--bound {
+  background: var(--zhichi-primary);
+  border-color: var(--zhichi-primary);
+  color: #fff;
+}
+
+/* ---------- 记忆 Tab ---------- */
+
+.zhichi-memory-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.zhichi-memory-tab__toolbar {
+  display: flex;
+  gap: 8px;
+}
+
+.zhichi-memory-tab__add-btn,
+.zhichi-memory-tab__digest-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: var(--zhichi-radius-sm);
+  border: 1px solid var(--zhichi-border);
+  background: var(--zhichi-bg-card);
+  color: var(--zhichi-text-sub);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.zhichi-memory-tab__add-btn:hover,
+.zhichi-memory-tab__digest-btn:hover:not(:disabled) {
+  border-color: var(--zhichi-primary-light);
+  color: var(--zhichi-primary-dark);
+}
+
+.zhichi-memory-tab__digest-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* 整理失败提示：说清卡在哪一步 */
+.zhichi-memory-tab__failure {
+  margin: 6px 0 0;
+  padding: 6px 10px;
+  border-radius: var(--zhichi-radius-sm);
+  background: rgba(255, 197, 107, 0.16);
+  color: #a97a2a;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* 上次整理摘要：一行说清"它刚才改了什么" */
+.zhichi-memory-tab__report {
+  margin: 6px 0 0;
+  padding: 6px 10px;
+  border-radius: var(--zhichi-radius-sm);
+  background: var(--zhichi-bg-soft);
+  color: var(--zhichi-text-sub);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* 有冲突时转成警示色：这条需要用户自己定夺 */
+.zhichi-memory-tab__report--conflict {
+  background: rgba(255, 197, 107, 0.16);
+  color: #a97a2a;
+}
+
+/* 检索预览：一句话会带出哪几条记忆 */
+.zhichi-memory-tab__retrieval-toggle {
+  align-self: flex-start;
+  padding: 6px 12px;
+  border: 1px dashed var(--zhichi-border);
+  border-radius: var(--zhichi-radius-sm);
+  background: transparent;
+  color: var(--zhichi-primary-dark);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.zhichi-memory-tab__retrieval-toggle:hover {
+  border-color: var(--zhichi-primary-light);
+}
+
+.zhichi-memory-tab__retrieval {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: var(--zhichi-radius-sm);
+  background: var(--zhichi-bg-soft);
+}
+
+.zhichi-memory-tab__retrieval input {
+  padding: 6px 10px;
+  border: 1px solid var(--zhichi-border);
+  border-radius: var(--zhichi-radius-sm);
+  background: var(--zhichi-bg-card);
+  color: var(--zhichi-text-main);
+  font-size: 13px;
+  outline: none;
+}
+
+.zhichi-memory-tab__retrieval-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.zhichi-memory-tab__retrieval-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.zhichi-memory-tab__retrieval-content {
+  color: var(--zhichi-text-main);
+}
+
+.zhichi-memory-tab__retrieval-why {
+  color: var(--zhichi-primary-dark);
+}
+
+.zhichi-memory-tab__retrieval-empty,
+.zhichi-memory-tab__retrieval-hint {
+  color: var(--zhichi-text-mute);
+}
+
+.zhichi-memory-tab__retrieval-hint {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.zhichi-memory-tab__hint {
+  margin: 0;
+  color: var(--zhichi-text-mute);
+  font-size: 12px;
+}
+
+.zhichi-memory-tab__search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--zhichi-radius-sm);
+  border: 1px solid var(--zhichi-border);
+  background: var(--zhichi-bg-card);
+  color: var(--zhichi-text-mute);
+}
+
+.zhichi-memory-tab__search input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  color: var(--zhichi-text-main);
+}
+
+.zhichi-memory-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.zhichi-memory-list__item {
+  padding: 10px 12px;
+  border-radius: var(--zhichi-radius-md);
+  border: 1px solid var(--zhichi-border);
+  background: var(--zhichi-bg-card);
+}
+
+.zhichi-memory-list__item--pinned {
+  border-color: var(--zhichi-accent);
+  background: linear-gradient(180deg, #fff7f9 0%, var(--zhichi-bg-card) 100%);
+}
+
+.zhichi-memory-list__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.zhichi-memory-list__kind {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--zhichi-primary-light);
+  color: var(--zhichi-primary-dark);
+  font-size: 11px;
+}
+
+.zhichi-memory-list__importance {
+  color: var(--zhichi-warning);
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+/* 「手动」标记：这条记忆由用户自己维护，自动整理不会动它 */
+.zhichi-memory-list__origin {
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--zhichi-primary-light);
+  color: var(--zhichi-primary-dark);
+  font-size: 11px;
+}
+
+.zhichi-memory-list__actions {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
+}
+
+.zhichi-memory-list__actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: var(--zhichi-radius-sm);
+  background: transparent;
+  color: var(--zhichi-text-mute);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.zhichi-memory-list__actions button:hover {
+  background: var(--zhichi-bg-soft);
+  color: var(--zhichi-primary-dark);
+}
+
+.zhichi-memory-list__content {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--zhichi-text-main);
+  word-break: break-word;
+}
+
+/* 记忆的"取代"记录：弱化显示，但让用户看得见 */
+.zhichi-memory-list__superseded {
+  margin: 4px 0 0;
+  padding-left: 8px;
+  border-left: 2px solid var(--zhichi-divider);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--zhichi-text-mute);
+}
+
+/* 冲突提示：自动整理与用户手动维护/置顶的记忆说法不一致，等用户定夺 */
+.zhichi-memory-list__conflict {
+  margin: 6px 0 0;
+  padding: 5px 8px;
+  border-radius: var(--zhichi-radius-sm);
+  background: #ffc56b29;
+  color: #a97a2a;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.zhichi-memory-list__keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.zhichi-memory-list__keywords span {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--zhichi-bg-soft);
+  color: var(--zhichi-text-mute);
+  font-size: 11px;
+}
+
+/* 记忆的来源与更新时间（可悬停查看完整时间） */
+.zhichi-memory-list__meta {
+  margin: 6px 0 0;
+  color: var(--zhichi-text-mute);
+  font-size: 11px;
+}
+
+/* ---------- 世界书（设定 Tab） ---------- */
+
+/* 停用的条目：淡一点，但仍可读（不是删除） */
+.zhichi-lore-list__item--off {
+  opacity: 0.55;
+}
+
+.zhichi-lore-list__toggle {
+  display: flex;
+  align-items: center;
+  padding: 0 2px;
+  cursor: pointer;
+}
+
+/* ---------- 记忆编辑器 ---------- */
+
+.zhichi-memory-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.zhichi-memory-editor__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--zhichi-text-sub);
+}
+
+.zhichi-memory-editor__field--inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.zhichi-memory-editor__field select,
+.zhichi-memory-editor__field input,
+.zhichi-memory-editor__field textarea {
+  padding: 7px 10px;
+  border-radius: var(--zhichi-radius-sm);
+  border: 1px solid var(--zhichi-border);
+  background: var(--zhichi-bg-card);
+  color: var(--zhichi-text-main);
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.zhichi-memory-editor__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.zhichi-memory-editor__actions button {
+  padding: 7px 16px;
+  border-radius: var(--zhichi-radius-sm);
+  border: 1px solid var(--zhichi-border);
+  background: var(--zhichi-bg-card);
+  color: var(--zhichi-text-sub);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.zhichi-memory-editor__save {
+  background: var(--zhichi-primary) !important;
+  border-color: var(--zhichi-primary) !important;
+  color: #fff !important;
+}
+
+/* ---------- 剧情 Tab ---------- */
+
+.zhichi-plot-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.zhichi-plot-tab__card,
+.zhichi-plot-tab__timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.zhichi-plot-tab__section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--zhichi-text-main);
+}
+
+.zhichi-plot-tab__section-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.zhichi-plot-tab__section-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  border-radius: var(--zhichi-radius-sm);
+  border: 1px solid var(--zhichi-border);
+  background: var(--zhichi-bg-card);
+  color: var(--zhichi-text-sub);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.zhichi-plot-tab__section-actions button:hover:not(:disabled) {
+  border-color: var(--zhichi-primary-light);
+  color: var(--zhichi-primary-dark);
+}
+
+.zhichi-plot-tab__section-actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* 本次更新：把"后台整理改了哪几项"一行一行摆出来 */
+.zhichi-plot-tab__diff {
+  padding: 8px 10px;
+  border-radius: var(--zhichi-radius-sm);
+  background: var(--zhichi-bg-soft);
+}
+
+.zhichi-plot-tab__diff-title {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: var(--zhichi-text-sub);
+}
+
+.zhichi-plot-tab__diff-list {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--zhichi-text-main);
+}
+
+.zhichi-plot-tab__diff-field {
+  display: inline-block;
+  min-width: 48px;
+  margin-right: 4px;
+  color: var(--zhichi-primary-dark);
+}
+
+.zhichi-plot-tab__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.zhichi-plot-tab__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--zhichi-text-sub);
+}
+
+.zhichi-plot-tab__field input,
+.zhichi-plot-tab__field textarea {
+  padding: 7px 10px;
+  border-radius: var(--zhichi-radius-sm);
+  border: 1px solid var(--zhichi-border);
+  background: var(--zhichi-bg-card);
+  color: var(--zhichi-text-main);
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.zhichi-plot-tab__save {
+  align-self: flex-end;
+  padding: 7px 18px;
+  border-radius: var(--zhichi-radius-sm);
+  border: 1px solid var(--zhichi-primary);
+  background: var(--zhichi-primary);
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.zhichi-plot-tab__add-event {
+  display: flex;
+  gap: 6px;
+}
+
+.zhichi-plot-tab__add-event input {
+  flex: 1;
+  padding: 7px 10px;
+  border-radius: var(--zhichi-radius-sm);
+  border: 1px solid var(--zhichi-border);
+  background: var(--zhichi-bg-card);
+  color: var(--zhichi-text-main);
+  font-size: 13px;
+}
+
+.zhichi-plot-tab__add-event button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  border-radius: var(--zhichi-radius-sm);
+  border: 1px solid var(--zhichi-border);
+  background: var(--zhichi-bg-card);
+  color: var(--zhichi-text-sub);
+  cursor: pointer;
+}
+
+.zhichi-plot-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.zhichi-plot-list__item {
+  padding: 9px 12px;
+  border-radius: var(--zhichi-radius-md);
+  border: 1px solid var(--zhichi-border);
+  background: var(--zhichi-bg-card);
+}
+
+.zhichi-plot-list__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  color: var(--zhichi-text-mute);
+  font-size: 11px;
+}
+
+.zhichi-plot-list__importance {
+  color: var(--zhichi-warning);
+  letter-spacing: 1px;
+}
+
+.zhichi-plot-list__badge {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--zhichi-accent-light);
+  color: #b06a7c;
+}
+
+.zhichi-plot-list__head button {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: var(--zhichi-radius-sm);
+  background: transparent;
+  color: var(--zhichi-text-mute);
+  cursor: pointer;
+}
+
+.zhichi-plot-list__head button:hover {
+  background: var(--zhichi-bg-soft);
+  color: var(--zhichi-danger);
+}
+
+.zhichi-plot-list__item p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--zhichi-text-main);
+  word-break: break-word;
+}

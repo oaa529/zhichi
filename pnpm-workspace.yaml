@@ -1,0 +1,9 @@
+packages:
+  - "shared/*"
+  - "packages/*"
+  - "apps/*"
+
+# pnpm v12 默认拒绝所有依赖的构建脚本
+# esbuild 的 postinstall 是 vite 启动的前提，必须显式允许
+allowBuilds:
+  esbuild: true
