@@ -4,6 +4,11 @@ dist/
 coverage/
 *.tsbuildinfo
 
+# ---------- 桌面端（Tauri） ----------
+# Rust 编译产物 + tauri CLI 生成的 schema（体积大且可再生成）
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/gen/
+
 # ---------- 本地验证留下的东西（不进版本库） ----------
 # 浏览器验证用的临时 profile 与截图
 .pw-profile/

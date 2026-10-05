@@ -116,6 +116,179 @@
 
 ---
 
+# 第一百零六轮：桌面端壳（Tauri v2）——顺带趟过一个"假安装"的 SDK 大坑
+
+## 一、目标与界限
+
+把应用打成桌面程序，**不引入第二个前端**：UI/引擎/存储全部继续用
+`apps/web` 的产物，`apps/desktop/src-tauri` 只是壳（窗口参数 + 打包）。
+
+```
+pnpm install
+pnpm desktop:dev      # vite dev server（strictPort 5174）+ cargo build + 开窗
+pnpm desktop:build    # tsc -b && vite build → cargo release → NSIS 安装包
+```
+
+- `tauri.conf.json`：`beforeDevCommand` 走 `pnpm --filter @wechat-rp/web dev:desktop`
+  （比默认多 `--port 5174 --strictPort`，避免端口漂移让 devUrl 对不上）；
+  打包走普通 `build`，`frontendDist` 指向 `apps/web/dist`。
+- 新包 `@wechat-rp/desktop` 只挂 `@tauri-apps/cli` 一个 devDependency，
+  `pnpm -r typecheck` / 根 `pnpm build`（filter `./packages/*`）都**不受影响**，
+  CI（ubuntu + vitest/typecheck/build）零改动。
+- Rust 侧约 20 行：`tauri::Builder::default().run(generate_context!())`，
+  capability 只开 `core:default`（本应用不需要任何额外原生权限）。
+- 图标：程式化生成 1024px 源图（品牌色 `#7c9eff` 圆角方块 + 白"咫"字），
+  `tauri icon` 产出全套（ico/icns/PNG/Appx），源图留在 `src-tauri/app-icon.png`
+  供以后重生成。
+
+## 二、验证（本机实测）
+
+```
+cargo check（gnu 工具链）：Finished dev profile，零错误
+pnpm desktop:dev：
+  Running BeforeDevCommand (vite --port 5174 --strictPort)
+  VITE v5.4.21 ready in 243ms
+  Running target\debug\zhichi-desktop.exe
+  → 进程 zhichi-desktop 出现，MainWindowTitle = "咫尺"
+  → msedgewebview2 子进程在跑（CPU 8.6s / ~330MB），说明 WebView 真的在渲染
+```
+
+## 三、踩的大坑：Windows SDK"假安装"（记录，省下次的时间）
+
+本机 Rust msvc 链接报 `link.exe not found` → 发现**没有 Windows SDK**
+（`kernel32.lib` 全盘不存在），而 VS Installer 里 SDK 显示"已安装"。
+逐步排查出这条完整的事实链：
+
+1. winget 装 `Microsoft.WindowsSDK.10.0.26100` 报"已成功安装"——
+   **假成功**：bootstrapper 返回 0 但什么都没写盘（全盘搜不到 kernel32.lib）。
+2. VS Installer `modify --add ...Windows11SDK.26100 --quiet` 同样返回 0
+   不干活。日志给出根因：`D:\Windows Kits\10` 只剩 `Catalogs`/`Debuggers`，
+   注册表里却留着 155 条 SDK 安装记录、`KitsRoot10 = D:\Windows Kits\10`——
+   **SDK 装过，后来文件被删了，记录还在**。于是"新装/修复"一律被当成
+   "已装好"直接跳过，UI 也显示已安装。
+3. 清掉注册表记录后 VS Installer 仍不干活：`_Channels` 里的
+   channelManifest.json 是**残缺的**（115KB，连 Windows11SDK 组件 ID 都没有），
+   安装器无法解析任何组件 → `--add` 静默 no-op。
+4. 静默/免 UAC 提权路径全部走不通（UAC 被点取消时 Start-Process 报
+   "operation was canceled by the user"）。
+
+**结论（给未来的自己）**：这台机器上别跟 SDK 较劲了，走 GNU 工具链，
+一次到位、无 UAC、不需要 SDK：
+
+```bash
+rustup toolchain install stable-x86_64-pc-windows-gnu
+rustup override set stable-x86_64-pc-windows-gnu   # 仓库根执行，只记本机
+```
+
+关键点：build script 必须按 host 编译，所以**只换 target 不够**，必须把
+rustup 的 host 工具链也换成 gnu（`stable-x86_64-pc-windows-gnu`），
+这样 proc-macro/build script 的编译与链接全部走 MinGW，不碰 MSVC。
+`~/.cargo/config.toml` 里给 gnu target 显式指定了 linker（默认值，写明以防
+PATH 里有多份 gcc）；这些都在用户目录，**不进仓库**。
+
+差一点走通的另一条路也记一笔：`D:\MinGw\mingw64` 有全套 Windows import libs，
+用 `dumpbin /exports` + `lib /def` 从 `ucrtbase.dll`/`vcruntime140.dll`/
+`kernel32.dll` 现生成 import lib 也能解决 `LNK1181 kernel32.lib`；但
+`mainCRTStartup`/`_fltused` 不是 DLL 导出（只存在于 SDK 的静态库），
+缺的这几个符号补不齐——所以这条路到 LNK1120 就断了，不如 GNU 干净。
+生成的 lib 留在 `D:\mingw-msvc-libs`（含脚本 gen-import-lib.ps1），
+万一以后想复活 msvc 路线可以直接用。
+
+顺带记两个环境层面的坑：① 中文用户名 + 非 ASCII 工作目录，
+`cmd` 的 bat 文件必须是 **CRLF + 纯 ASCII**，否则 GBK 解析会把
+`%errorlevel%` 之类切碎（本轮被这个连坑三次）；② 用 LF 换行/UTF-8 写的
+`.bat`/`.ps1` 在中文 Windows 上都要小心，宁可运行时取 `$env:USERPROFILE`
+也不要把中文路径写死进脚本。
+
+## 四、对仓库的改动
+
+- 新增 `apps/desktop/`（package.json + devshell.ps1 + src-tauri 全套配置与图标）
+- `apps/web/package.json` 加 `dev:desktop`（strictPort）；根 `package.json`
+  加 `desktop:dev` / `desktop:build` 两个脚本
+- `.gitignore`：忽略 `src-tauri/target/`、`src-tauri/gen/`（Cargo.lock 保留）
+- README：新增「桌面端（Tauri）」小节（环境要求、GNU 备用路径、数据隔离提醒）、
+  常用脚本表补两行、目录结构补 apps/desktop
+
+## 五、验收
+
+```bash
+pnpm test           # 927 个测试全绿（78 个文件，桌面包不影响任何现有测试）
+pnpm -r typecheck   # 4 包全绿（桌面包没有 typecheck 脚本，pnpm -r 自动跳过）
+pnpm build          # core + ui-wechat 构建成功
+pnpm build:web      # web 生产构建成功（JS 531.53 KB / gzip 180.76 KB）
+pnpm desktop:dev    # 真机窗口「咫尺」起成功，WebView2 正常渲染
+```
+
+已知边界：桌面端只做了壳。托盘图标、系统通知、开机自启、单实例、
+文件系统直存备份这些原生能力都没接；数据与浏览器 IndexedDB 互相隔离。
+
+---
+
+# 第一百零五轮：自动备份（数据安全补上"防自己"这一半）
+
+## 一、缺口：备份只能靠手动，而且方向不对
+
+README 里写的是「备份是手动触发的：需要你自己记得定期导出」。手动导出
+是**防"换机器 / 清缓存"**的（下载成文件带走）。但同一台设备上还有一种
+更常见的事故它防不了：**数据被写坏 / 误删 / 升级事故**（hydration 清洗
+丢掉条目、删会话误删、某次写入中断）。这类事故里数据根本没离开过这台
+设备——备份文件在哪都救不了，因为「备份 = 定期导出」这个动作只要没做，
+事故发生时手里就什么都没有。
+
+## 二、做法：自动快照留在浏览器本地
+
+新 `core/backup/AutoBackup.ts`（纯函数）+ `apps/web/autoBackupRunner.ts`
+（组装层）：
+
+| 部分 | 内容 |
+| --- | --- |
+| 触发 | 启动后检查一次（间隔到期 / 从没备份过 → 补一份基线）+ 打开期间每 5 分钟检查 |
+| 内容 | 与手动导出完全同一条 `buildBackup` 路径（**不含 API Key**） |
+| 存储 | 索引（元数据）+ 正文（`auto-backup:snapshot:<id>`）分开存，列出快照不必读全文 |
+| 保留 | 默认 10 份，超出的按时间删最旧（索引与正文一起删，不烂在库里） |
+| 恢复 | 与手动导入同一条「解析 → 合并 → 落库」链路（合并模式，不删现有数据） |
+| 空白应用 | 没有任何角色/会话时不产生空快照 |
+
+设置面板「数据备份」下新增区块：开关 + 间隔（1 小时 / 6 小时 / 每天 /
+每周）+ 保留份数 + 立即备份 + 快照列表（每份可下载 / 恢复 / 删除），
+并显示「上次自动备份 · 上次手动导出」——手动导出时间也顺手记了，
+提醒用户"该换台机器存一份文件了"（自动备份防不了清缓存）。
+
+## 三、边界与设计取舍
+
+- **自动备份防不了清缓存 / 换机器**：快照也在同一台设备的 IndexedDB 里。
+  它的定位是"防自己"（写坏 / 误删 / 升级），"防丢设备"仍靠手动导出成文件
+  ——所以面板里特意保留了「上次手动导出」的提醒，README 的已知限制也
+  改写了这条。
+- **空白应用不产生空快照**：全新安装打开一次就拍一份空备份没有意义，
+  只会把"第一次打开"这个时刻留在索引里。
+- **配置走 sessionStore 持久化**（与 digestConfig 同一套路），
+  hydration 的"进门先过安检"里也加了 `normalizeAutoBackupConfig`：
+  持久化里混进坏形状（`enabled: undefined` 之类）时整体回退默认值，
+  不会让 runner 或面板读到没法用的配置。
+
+## 四、验证
+
+```bash
+pnpm test           # 927 个测试全绿（78 个文件，本轮新增 3 个文件 52 条）
+pnpm -r typecheck   # 4 包全绿
+pnpm build          # core + ui-wechat 构建成功
+pnpm build:web      # web 生产构建成功（JS 531.22 KB / gzip 180.66 KB）
+pnpm dev            # 起得来，页面正常
+```
+
+新增用例覆盖：到期判定边界（间隔刚满 / 差一分钟 / 从未备份 / 关闭）、
+保留裁剪（超限按时间删最旧 / 份数夹取区间 / 入参顺序无关）、
+配置归一化（null / 非对象 / 字段级坏值逐个回退）、
+runner（首开基线快照 / 间隔未到不重复 / 到点再拍 / 空白应用不产生 /
+超保留份数连正文一起删 / **快照不含 API Key** / 下载命名与损坏提示 /
+恢复合并不删本地 / 手动导出时间戳 / 改小份数立即清理）、
+设置面板 UI（开关隐藏配置 / 间隔与份数写入 store / 越界不写入 /
+立即备份回执 / 下载恢复删除走确认与回调 / 状态行显示手动导出时间），
+以及与手动导出的**内容一致性**（同一个 buildBackup 路径，逐字节相等）。
+
+---
+
 # 第一百零四轮：开源到 GitHub（顺带被 CI 抓出一个时区 bug）
 
 ## 一、上传前的体检

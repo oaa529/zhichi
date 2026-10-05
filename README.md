@@ -277,10 +277,18 @@ The UI and docs are in Chinese. Licensed under [MIT](./LICENSE).
   - 渲染窗口**可平移**：搜索跳到很久以前的消息时只渲染目标附近那一段
     （实测 3000 条会话里跳第 100 条：239ms / 300 行，改前是 800ms / 3000 行），
     并给出「回到最新」出口
-- 875 个单元/集成测试，`pnpm test:coverage` 语句覆盖率约 95%
+- 927 个单元/集成测试，`pnpm test:coverage` 语句覆盖率约 95%
 
 **数据安全**
 
+- **自动备份**：开启后按间隔（每 1 小时 / 6 小时 / 每天 / 每周，默认每天）
+  把一份完整快照留在浏览器本地（IndexedDB），最多保留 N 份（默认 10，
+  超出的自动删最旧）。快照与手动备份内容一致（**不含 API Key**），
+  防的是"数据被写坏 / 误删 / 升级事故"这类同一台设备上的事故；
+  设置面板可看到快照列表（时间 / 大小 / 会话数），
+  每份都能**下载成文件**或**恢复**（合并模式，不删现有数据），
+  也能单独删除。注意它防不了清缓存 / 换机器——面板会显示
+  「上次手动导出」时间提醒你定期做一次下面的文件导出
 - 「设置 → 数据备份」可一键把全部数据导出成 JSON 备份文件
   （角色 / 会话 / 消息 / 记忆 / 剧情 / **「关于你」** / 整理账本 / 草稿 /
   API 配置，**不含 API Key**）
@@ -332,11 +340,62 @@ VITE_LLM_TEMPERATURE=800         # 注意是千分数：800 = 0.8
 VITE_LLM_TIMEOUT_MS=60000        # 免费额度响应慢时建议调大
 ```
 
+## 桌面端（Tauri）
+
+同一套代码也能打成桌面应用（不需要开浏览器）。壳在 `apps/desktop/`，
+UI、引擎、存储全部复用 `apps/web` 的构建产物，**没有第二个前端**。
+
+```bash
+pnpm install
+pnpm desktop:dev      # 开发模式：起 vite dev server + 编译 Rust 壳并开窗
+pnpm desktop:build    # 打包：先 tsc+vite build，再 cargo release + 生成安装包
+```
+
+产物：`apps/desktop/src-tauri/target/release/`（exe）与
+`.../target/release/bundle/nsis/`（安装程序）。
+
+**环境要求**（比 web 多两样，第一次跑之前配好）：
+
+1. **Rust**（rustup 装上即可，默认 msvc 目标）
+   ```bash
+   winget install Rustlang.Rustup        # Windows；其余平台见 https://rustup.rs
+   ```
+2. **Windows 10/11 SDK**（链接器需要 `kernel32.lib` 等）——用
+   **Visual Studio Installer** 勾选「使用 C++ 的桌面开发」工作负载，
+   或单独勾选「Windows 11 SDK (10.0.26100)」组件即可。
+   > 疑难杂症：如果 VS Installer 里显示"已安装"但
+   > `cargo check` 仍报 `link.exe not found` / `LNK1181: kernel32.lib`，
+   > 那是 SDK 的**文件丢了但记录还在**（装过又被人删过）。
+   > 确认方法：看 `D:\Windows Kits\10\lib` 或
+   > `C:\Program Files (x86)\Windows Kits\10\lib` 里有没有版本目录
+   > （如 `10.0.26100.0`）；没有就是文件缺失，需要修复或重装。
+3. **WebView2 Runtime**（Windows 10/11 默认自带；没有的话装
+   "Evergreen Standalone Installer"）
+
+**GNU 工具链备用路径**（机器上没有可用的 Windows SDK 时）：改用
+MinGW-w64 + `x86_64-pc-windows-gnu`，完全不需要 SDK——
+
+```bash
+rustup toolchain install stable-x86_64-pc-windows-gnu
+rustup override set stable-x86_64-pc-windows-gnu   # 在仓库根执行，只对本机生效
+```
+
+再确保 `gcc`（MinGW-w64）在 PATH 里。本仓库的 `apps/desktop/devshell.ps1`
+就是把这两样（cargo bin + MinGW bin）加进 PATH 的小工具，可直接
+`. \apps\desktop\devshell.ps1 -Command "pnpm desktop:dev"`。
+注意 GNU 路线对本仓库的 **build script 也用 MinGW 编译**（rustup override
+作用于整个目录），所以整条链都不碰 MSVC。
+
+桌面端与 web 的数据完全隔离（WebView2 的 IndexedDB 存在
+`%LOCALAPPDATA%\com.oaa.zhichi\EBWebView` 下），换着用请各自导出一份备份。
+
 ## 常用脚本
 
 | 命令 | 说明 |
 |---|---|
 | `pnpm dev` | 启动 web 应用 |
+| `pnpm desktop:dev` | 启动桌面应用（Tauri，需要 Rust + Windows SDK） |
+| `pnpm desktop:build` | 打包桌面应用（exe + NSIS 安装包） |
 | `pnpm test` | 运行全部测试（vitest） |
 | `pnpm test:coverage` | 测试 + 覆盖率报告 |
 | `pnpm typecheck` | 四个包全量类型检查 |
@@ -369,7 +428,11 @@ VITE_LLM_TIMEOUT_MS=60000        # 免费额度响应慢时建议调大
 │       ├── hooks/               # rAF 打字机、视口键盘自适应等
 │       ├── store/               # chatStore（活跃会话运行时）+ sessionStore（会话/角色/记忆/剧情）
 │       └── utils/               # 纯函数：消息排序、滚动跟随、时间格式化、会话时间、节奏预设…
-└── apps/web/              # 组装层（Vite + React）：引擎装配、后台整理、实时 AI
+├── apps/web/              # 组装层（Vite + React）：引擎装配、后台整理、实时 AI
+└── apps/desktop/          # 桌面端壳（Tauri v2）
+    ├── devshell.ps1           # Windows 开发辅助（PATH + 工具链说明）
+    └── src-tauri/             # Rust 壳：窗口配置、NSIS 打包、图标
+                             #   UI 直接加载 apps/web 的构建产物，没有第二个前端
 ```
 
 ## 架构要点
@@ -604,13 +667,17 @@ agnes-2.5-flash 与 2.5-pro 上 A 组（不注入）本来就 0/4 干净，
   会从被裁掉的中段里按信号强度挑出两句放进【前情提要】，排在"最近几条"之前；
   中段全是闲聊时不会硬凑。摘要按**整条**塞：塞不下就整条不要并补"…"，
   不会出现"半句话被从中间切断"。代价是摘要上限从 260 字放宽到 360 字。
-- **备份是手动触发的**：需要你自己记得定期导出；目前没有自动备份或云同步。
+- **自动备份防不了"清缓存 / 换机器"**：快照存在同一台设备的 IndexedDB 里，
+  清缓存会连它一起清掉。所以它防的是"数据被写坏 / 误删 / 升级事故"；
+  换机器 / 防清缓存仍要靠手动导出文件（设置面板会提醒上次手动导出时间）。
 - 尚未接入 lint 工具链，但 `tsc --strict` 已开启 `noUnusedLocals` /
-  `noUnusedParameters`（死代码会被 typecheck 拦下来），加上 875 个测试保证质量。
+  `noUnusedParameters`（死代码会被 typecheck 拦下来），加上 927 个测试保证质量。
 - **世界书不做「递归扫描」**：条目内容不会再去触发别的条目（社区卡里叫
   `recursive_scanning`）。长设定集上那会滚雪球，注入量不可控，因此只扫一遍。
 - **AI 生成角色需要配好 API**：演示（mock）模式下点「生成」会提示先去设置里配置。
-- 后续可选方向：群聊、角色卡单独导入导出、打包成桌面应用
+- **桌面端数据与浏览器不互通**（IndexedDB 按宿主隔离）。桌面端目前只做了壳：
+  窗口、打包、图标就位；托盘、系统代理、开机启动等原生能力还没接。
+- 后续可选方向：群聊、角色卡单独导入导出、桌面端原生能力
   （语音/视频/图片消息不在范围内，不会做）。
 
 ## 文档

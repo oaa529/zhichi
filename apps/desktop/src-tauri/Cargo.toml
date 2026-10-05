@@ -1,0 +1,18 @@
+[package]
+name = "zhichi-desktop"
+version = "0.1.0"
+description = "咫尺 · AI 角色对话应用（桌面端壳）"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+
+[profile.release]
+# 桌面壳不跑重逻辑（全部在 WebView 里），体积优先
+strip = true
+lto = true
+codegen-units = 1
+panic = "abort"

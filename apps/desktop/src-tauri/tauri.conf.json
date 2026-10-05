@@ -1,0 +1,48 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Zhichi",
+  "version": "0.1.0",
+  "identifier": "com.oaa.zhichi",
+  "build": {
+    "beforeDevCommand": "pnpm --filter @wechat-rp/web dev:desktop",
+    "devUrl": "http://localhost:5174",
+    "beforeBuildCommand": "pnpm --filter @wechat-rp/web build",
+    "frontendDist": "../../web/dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "咫尺",
+        "width": 1180,
+        "height": 820,
+        "minWidth": 900,
+        "minHeight": 600,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "category": "SocialNetworking",
+    "shortDescription": "咫尺 · AI 角色对话应用",
+    "longDescription": "微信风格 + 二次元立绘的 AI 角色对话应用，围绕一套「拟真引擎」把 LLM 的流式输出转换成像真人聊天的消息流。数据全部存在本地。",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": ["SimpChinese"]
+      }
+    }
+  }
+}

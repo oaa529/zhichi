@@ -1,0 +1,14 @@
+{
+  "name": "@wechat-rp/desktop",
+  "private": true,
+  "version": "0.1.0",
+  "description": "咫尺桌面端（Tauri v2 壳，复用 apps/web 的构建产物）",
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  }
+}

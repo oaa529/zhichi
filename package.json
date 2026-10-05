@@ -9,6 +9,8 @@
     "dev": "pnpm --filter @wechat-rp/web dev",
     "build": "pnpm -r --filter=./packages/* build",
     "build:web": "pnpm --filter @wechat-rp/web build",
+    "desktop:dev": "pnpm --filter @wechat-rp/desktop dev",
+    "desktop:build": "pnpm --filter @wechat-rp/desktop build",
     "typecheck": "pnpm -r typecheck",
     "test": "vitest run",
     "test:watch": "vitest",
