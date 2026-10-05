@@ -15,9 +15,10 @@
     "build": "tsup src/index.ts --format esm --dts --external react"
   },
   "dependencies": {
-    "@wechat-rp/shared-types": "workspace:*",
     "@wechat-rp/core": "workspace:*",
+    "@wechat-rp/shared-types": "workspace:*",
     "framer-motion": "^11.3.0",
+    "lucide-react": "^1.52.0",
     "zustand": "^4.5.4"
   },
   "peerDependencies": {
@@ -25,10 +26,10 @@
     "react-dom": "^18.3.0"
   },
   "devDependencies": {
+    "@testing-library/react": "^16.0.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
-    "typescript": "^5.5.4",
     "tsup": "^8.2.4",
-    "@testing-library/react": "^16.0.0"
+    "typescript": "^5.5.4"
   }
 }

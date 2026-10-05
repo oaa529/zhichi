@@ -41,7 +41,10 @@ function makeApi(overrides: Partial<IAutoBackupApi> = {}): IAutoBackupApi {
 }
 
 function renderPanel(api: IAutoBackupApi): ReturnType<typeof render> {
-  return render(<SettingsPanel autoBackup={api} />);
+  const result = render(<SettingsPanel autoBackup={api} />);
+  // 自动备份在「备份」Tab 下，默认显示的是「模型」——先切过去
+  fireEvent.click(screen.getByText("备份"));
+  return result;
 }
 
 /** 自动备份开关（区块里唯一的 checkbox，面板其他部分还有别的 checkbox）。 */
@@ -60,6 +63,42 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+});
+
+describe("设置分组 Tab", () => {
+  it("默认显示「模型」组（API 配置），其他组不在 DOM 里", () => {
+    render(<SettingsPanel autoBackup={makeApi()} />);
+    expect(screen.getByText("API 配置")).toBeTruthy();
+    expect(screen.queryByText("拟真度控制")).toBeNull();
+    expect(screen.queryByText("数据备份")).toBeNull();
+  });
+
+  it("点 Tab 只切换出对应组的内容", () => {
+    render(<SettingsPanel autoBackup={makeApi()} />);
+
+    fireEvent.click(screen.getByText("拟真"));
+    expect(screen.getByText("拟真度控制")).toBeTruthy();
+    expect(screen.queryByText("API 配置")).toBeNull();
+
+    fireEvent.click(screen.getByText("备份"));
+    expect(screen.getByText("数据备份")).toBeTruthy();
+    expect(screen.queryByText("拟真度控制")).toBeNull();
+
+    // 备份组里带着自动备份区块（api 传了才有）
+    expect(screen.getByText("自动备份")).toBeTruthy();
+  });
+
+  it("「关于你」与「记忆」两组也能切到", () => {
+    render(<SettingsPanel autoBackup={makeApi()} />);
+
+    fireEvent.click(screen.getByText("关于你"));
+    expect(screen.getByText("希望被怎么称呼")).toBeTruthy();
+    expect(screen.queryByText("API 配置")).toBeNull();
+
+    fireEvent.click(screen.getByText("记忆"));
+    expect(screen.getByText("记忆与剧情")).toBeTruthy();
+    expect(screen.queryByText("希望被怎么称呼")).toBeNull();
+  });
 });
 
 describe("自动备份区块渲染", () => {

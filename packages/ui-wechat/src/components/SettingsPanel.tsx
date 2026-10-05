@@ -26,6 +26,7 @@ import {
 } from "@wechat-rp/core";
 import type { IConnectionTestResult } from "@wechat-rp/core";
 import { Icon } from "./Icon";
+import type { IconName } from "./Icon";
 import { PACING_PRESETS } from "../utils/pacingPresets";
 import { formatRelativeTime } from "../utils/relativeTime";
 
@@ -42,11 +43,28 @@ export interface ISettingsPanelProps {
   readonly autoBackup?: IAutoBackupApi;
 }
 
-/** 备份操作结果（组装层返回，用于面板内提示）。 */
+/**
+ * 备份操作结果（组装层返回，用于面板内提示）。
+ */
 export interface IBackupActionResult {
   readonly ok: boolean;
   readonly message: string;
 }
+
+/** 设置分组 Tab。 */
+type SettingsTab = "model" | "realism" | "profile" | "memory" | "data";
+
+const SETTINGS_TABS: ReadonlyArray<{
+  readonly id: SettingsTab;
+  readonly label: string;
+  readonly icon: IconName;
+}> = [
+  { id: "model", label: "模型", icon: "sparkles" },
+  { id: "realism", label: "拟真", icon: "heart" },
+  { id: "profile", label: "关于你", icon: "contacts" },
+  { id: "memory", label: "记忆", icon: "memory" },
+  { id: "data", label: "备份", icon: "download" },
+];
 
 /**
  * 自动备份的操作入口（由组装层实现）。
@@ -100,6 +118,7 @@ export const SettingsPanel: FC<ISettingsPanelProps> = memo(
 
     const [testState, setTestState] = useState<TestState>({ status: "idle" });
     const [saved, setSaved] = useState(false);
+    const [activeTab, setActiveTab] = useState<SettingsTab>("model");
     const [backupState, setBackupState] = useState<IBackupActionResult | null>(
       null,
     );
@@ -185,6 +204,29 @@ export const SettingsPanel: FC<ISettingsPanelProps> = memo(
 
     return (
       <div className="zhichi-settings">
+        {/*
+          设置分组 Tab：原来五个 section 首尾相接排成一个近千行的长滚动，
+          改一个 API Key 要翻半天。现在按用途分五组，一次只看一组。
+        */}
+        <div className="zhichi-settings__tabs" role="tablist">
+          {SETTINGS_TABS.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              className={`zhichi-settings__tab${
+                activeTab === tab.id ? " zhichi-settings__tab--active" : ""
+              }`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              <Icon name={tab.icon} size={14} />
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {activeTab === "model" && (
         <section className="zhichi-settings__section">
           <h2 className="zhichi-settings__title">
             <Icon name="sparkles" size={16} />
@@ -370,21 +412,23 @@ export const SettingsPanel: FC<ISettingsPanelProps> = memo(
               )}
             </button>
           </div>
-          {isMock && (
-            <p className="zhichi-settings__hint">
-              Mock 模式无需测试连接，保存后会切换到对应适配器。
-            </p>
-          )}
-        </section>
+            {isMock && (
+              <p className="zhichi-settings__hint">
+                Mock 模式无需测试连接，保存后会切换到对应适配器。
+              </p>
+            )}
+          </section>
+        )}
 
-        {/*
-          "关于你"：角色卡描述角色、记忆是聊出来的，而这块是用户自己写的稳定背景。
-          它每轮都注入 Prompt（不等后台整理），于是角色从第一句就知道在跟谁说话。
-        */}
-        <section className="zhichi-settings__section">
-          <h2 className="zhichi-settings__title">
-            <Icon name="contacts" size={16} />
-            关于你
+            {/*
+              "关于你"：角色卡描述角色、记忆是聊出来的，而这块是用户自己写的稳定背景。
+              它每轮都注入 Prompt（不等后台整理），于是角色从第一句就知道在跟谁说话。
+            */}
+        {activeTab === "profile" && (
+          <section className="zhichi-settings__section">
+            <h2 className="zhichi-settings__title">
+              <Icon name="contacts" size={16} />
+              关于你
           </h2>
           <label className="zhichi-settings__field">
             <span className="zhichi-settings__field-label">希望被怎么称呼</span>
@@ -411,11 +455,13 @@ export const SettingsPanel: FC<ISettingsPanelProps> = memo(
             />
           </label>
           <p className="zhichi-settings__hint">
-            这块信息每轮都会随人设一起下发，不像长期记忆那样要等整理提炼——
-            角色从第一句起就知道在跟谁说话。
-          </p>
+这块信息每轮都会随人设一起下发，不像长期记忆那样要等整理提炼——
+角色从第一句起就知道在跟谁说话。
+</p>
         </section>
+        )}
 
+        {activeTab === "realism" && (
         <section className="zhichi-settings__section">
           <h2 className="zhichi-settings__title">
             <Icon name="heart" size={16} />
@@ -572,15 +618,17 @@ export const SettingsPanel: FC<ISettingsPanelProps> = memo(
                 })
               }
               className="zhichi-settings__slider"
-            />
-          </label>
+              />
+            </label>
         </section>
+        )}
 
-        <section className="zhichi-settings__section">
-          <h2 className="zhichi-settings__title">
-            <Icon name="memory" size={16} />
-            记忆与剧情
-          </h2>
+        {activeTab === "memory" && (
+          <section className="zhichi-settings__section">
+            <h2 className="zhichi-settings__title">
+              <Icon name="memory" size={16} />
+              记忆与剧情
+            </h2>
           <label className="zhichi-settings__field zhichi-settings__field--checkbox">
             <input
               type="checkbox"
@@ -684,19 +732,24 @@ export const SettingsPanel: FC<ISettingsPanelProps> = memo(
             />
           </label>
           <p className="zhichi-settings__hint">
-            整理会把「值得记住的事」与剧情事件写入本地记忆库，
-            并在后续对话中按相关度注入 prompt。Mock 模式下自动跳过。
-          </p>
+              整理会把「值得记住的事」与剧情事件写入本地记忆库，
+              并在后续对话中按相关度注入 prompt。Mock 模式下自动跳过。
+            </p>
         </section>
+          )}
 
-        {/* ---------- 数据备份 ---------- */}
-        <section className="zhichi-settings__section">
-          <h3 className="zhichi-settings__section-title">数据备份</h3>
-          <p className="zhichi-settings__hint">
-            角色、聊天记录、记忆与剧情都只存在这台设备的浏览器里，
-            清缓存、换浏览器或换电脑都会丢。建议定期导出一份备份。
-            备份文件是纯 JSON，不含 API Key。
-          </p>
+          {/* ---------- 数据备份 ---------- */}
+          {activeTab === "data" && (
+            <section className="zhichi-settings__section">
+            <h2 className="zhichi-settings__title">
+              <Icon name="download" size={16} />
+              数据备份
+            </h2>
+            <p className="zhichi-settings__hint">
+              角色、聊天记录、记忆与剧情都只存在这台设备的浏览器里，
+              清缓存、换浏览器或换电脑都会丢。建议定期导出一份备份。
+              备份文件是纯 JSON，不含 API Key。
+            </p>
           <div className="zhichi-settings__backup-actions">
             <button
               type="button"
@@ -738,15 +791,16 @@ export const SettingsPanel: FC<ISettingsPanelProps> = memo(
             新内容追加，不会删除你现在的数据；消息按 ID 去重。
           </p>
 
-          {autoBackup && (
-            <AutoBackupSection
-              api={autoBackup}
-              config={autoBackupConfig}
-              onChange={setAutoBackupConfig}
-              onFeedback={setBackupState}
-            />
-          )}
-        </section>
+            {autoBackup && (
+              <AutoBackupSection
+                api={autoBackup}
+                config={autoBackupConfig}
+                onChange={setAutoBackupConfig}
+                onFeedback={setBackupState}
+              />
+            )}
+          </section>
+        )}
       </div>
     );
   },

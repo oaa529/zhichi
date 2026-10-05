@@ -10,7 +10,7 @@
  * 记忆 / 剧情 Tab：见 MemoryTab / PlotTab。
  */
 
-import { memo, useState, useCallback } from "react";
+import { memo, useState, useCallback, useEffect } from "react";
 import type { FC, ChangeEvent } from "react";
 import { useSessionStore } from "../store/sessionStore";
 import {
@@ -60,7 +60,18 @@ export const PromptPanel: FC<IPromptPanelProps> = memo(
   const [editing, setEditing] = useState<IPromptTemplate | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
-  const list = Object.values(templates);
+    const list = Object.values(templates);
+
+    /** Esc 关闭面板：与点遮罩同等语义（"先关上"），编辑中的模板表单不受影响——它自己也有取消。 */
+    useEffect(() => {
+      const onKeyDown = (event: KeyboardEvent): void => {
+        if (event.key !== "Escape") return;
+        event.stopPropagation();
+        onClose();
+      };
+      window.addEventListener("keydown", onKeyDown);
+      return () => window.removeEventListener("keydown", onKeyDown);
+    }, [onClose]);
 
   // 当前会话角色与已绑定模板
   const session = activeSessionId ? sessions[activeSessionId] : null;

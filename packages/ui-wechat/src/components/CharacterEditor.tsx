@@ -268,15 +268,32 @@ export const CharacterEditor: FC<ICharacterEditorProps> = memo(
     );
 
     // 模板 hydration 可能晚于组件挂载：绑定模板到位后补一次回填
-    useEffect(() => {
-      if (promptContent) return;
-      const boundId = existing?.promptTemplateId;
-      if (!boundId) return;
-      const content = promptTemplates[boundId]?.content;
-      if (content) setPromptContent(content);
-      // 仅在模板/角色变化时尝试回填
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [existing?.promptTemplateId, promptTemplates]);
+      useEffect(() => {
+        if (promptContent) return;
+        const boundId = existing?.promptTemplateId;
+        if (!boundId) return;
+        const content = promptTemplates[boundId]?.content;
+        if (content) setPromptContent(content);
+        // 仅在模板/角色变化时尝试回填
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [existing?.promptTemplateId, promptTemplates]);
+
+      /**
+       * Esc 关闭编辑器。
+       *
+       * 与遮罩点击、右上角 × 同等语义（都是"放弃本次编辑"）——
+       * 浮层osk 用的一致预期：Esc 就是取消。
+       */
+      useEffect(() => {
+        if (!onClose) return;
+        const onKeyDown = (event: KeyboardEvent): void => {
+          if (event.key !== "Escape") return;
+          event.stopPropagation();
+          onClose();
+        };
+        window.addEventListener("keydown", onKeyDown);
+        return () => window.removeEventListener("keydown", onKeyDown);
+      }, [onClose]);
 
     const handleArchetypeChange = useCallback((arch: CharacterArchetype) => {
       setArchetype(arch);

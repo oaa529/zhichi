@@ -82,11 +82,31 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("CharacterEditor · AI 生成", () => {
-  it("没有注入生成器时不显示这块入口", () => {
-    render(<CharacterEditor editingCharacterId={null} onClose={() => {}} />);
-    expect(screen.queryByText("AI 生成角色")).toBeNull();
-  });
+  describe("CharacterEditor · AI 生成", () => {
+    it("Esc 关闭编辑器（与点 × 同等语义）", () => {
+      const onClose = vi.fn();
+      render(<CharacterEditor editingCharacterId={null} onClose={onClose} />);
+      fireEvent.keyDown(window, { key: "Escape" });
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it("其他按键不会误触关闭", () => {
+      const onClose = vi.fn();
+      render(<CharacterEditor editingCharacterId={null} onClose={onClose} />);
+      fireEvent.keyDown(window, { key: "Enter" });
+      fireEvent.keyDown(window, { key: "a" });
+      expect(onClose).not.toHaveBeenCalled();
+    });
+
+    it("没传 onClose 时 Esc 不炸", () => {
+      render(<CharacterEditor editingCharacterId={null} />);
+      expect(() => fireEvent.keyDown(window, { key: "Escape" })).not.toThrow();
+    });
+
+    it("没有注入生成器时不显示这块入口", () => {
+      render(<CharacterEditor editingCharacterId={null} onClose={() => {}} />);
+      expect(screen.queryByText("AI 生成角色")).toBeNull();
+    });
 
   it("注入生成器后显示入口与说明", () => {
     render(
