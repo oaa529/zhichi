@@ -53,6 +53,7 @@ export default defineConfig({
         "packages/core/src/plot/PlotKeeper.ts",
         "packages/core/src/time/Clock.ts",
         "packages/core/src/backup/BackupFile.ts",
+        "packages/core/src/backup/AutoBackup.ts",
         "packages/core/src/characterCard/TavernCard.ts",
         "packages/core/src/lore/LoreKeeper.ts",
         "packages/core/src/character/CharacterForge.ts",
@@ -62,6 +63,7 @@ export default defineConfig({
         "packages/ui-wechat/src/store/chatStore.ts",
         // 组装层里唯一有"真逻辑"的文件：窗口锚点与游标推进都在这儿
         "apps/web/src/digestRunner.ts",
+        "apps/web/src/autoBackupRunner.ts",
       ],
       exclude: [
         "packages/**/src/__tests__/**",

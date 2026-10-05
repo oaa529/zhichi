@@ -185,18 +185,15 @@ function applySnapshot(snapshot: IBackupPayload): void {
 }
 
 /**
- * 从用户选择的文件导入并合并（不删除任何本地数据）。
+ * 从备份文本导入并合并（不删除任何本地数据）。
+ *
+ * 手动导入与"从自动快照恢复"共用这一条路径：解析 → 合并 → 落库。
  *
  * 任何失败都只返回提示文本，不抛异常（界面据此显示红字）。
  */
-export async function importBackupFromFile(file: File): Promise<IImportResult> {
-  let text: string;
-  try {
-    text = await file.text();
-  } catch {
-    return { ok: false, message: "读取文件失败，请重试。" };
-  }
-
+export async function restoreFromBackupText(
+  text: string,
+): Promise<IImportResult> {
   const parsed = parseBackup(text);
   if (!parsed.ok) {
     return { ok: false, message: PARSE_ERROR_MESSAGES[parsed.error] };
@@ -217,4 +214,18 @@ export async function importBackupFromFile(file: File): Promise<IImportResult> {
     console.warn("[backup] 导入失败：", error);
     return { ok: false, message: "导入过程中出错，本地数据未被修改。" };
   }
+}
+
+/**
+ * 从用户选择的文件导入并合并（不删除任何本地数据）。
+ */
+export async function importBackupFromFile(file: File): Promise<IImportResult> {
+  let text: string;
+  try {
+    text = await file.text();
+  } catch {
+    return { ok: false, message: "读取文件失败，请重试。" };
+  }
+
+  return restoreFromBackupText(text);
 }

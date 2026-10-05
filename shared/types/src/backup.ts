@@ -77,6 +77,39 @@ export interface IBackupCounts {
   readonly messages: number;
 }
 
+/**
+ * 自动备份配置。
+ *
+ * 自动备份把当前数据快照留在**浏览器本地**（IndexedDB），防的是
+ * "数据被写坏 / 误删 / 升级事故"这类同一台设备上的事故；
+ * 它**不能**防"清缓存/换机器"（那会连快照一起清掉），所以
+ * 设置面板里仍提醒定期做一次手动导出（下载成文件）。
+ */
+export interface IAutoBackupConfig {
+  /** 是否开启自动备份。 */
+  readonly enabled: boolean;
+  /** 自动备份间隔（小时）。 */
+  readonly intervalHours: number;
+  /** 保留的快照份数（超出部分自动删除最旧的）。 */
+  readonly retentionCount: number;
+}
+
+/**
+ * 自动备份快照的索引条目。
+ *
+ * 只放元数据（正文按 `auto-backup:snapshot:<id>` 单独存），
+ * 这样列出快照不用把每一份全文都读进内存——长会话的备份可能有几 MB。
+ */
+export interface IAutoBackupSnapshotMeta {
+  /** 快照 ID（= 备份时间戳的字符串）。 */
+  readonly id: string;
+  /** 备份时间（ms）。 */
+  readonly at: number;
+  /** 序列化后的字节数。 */
+  readonly sizeBytes: number;
+  readonly counts: IBackupCounts;
+}
+
 /** 备份文件顶层结构。 */
 export interface IBackupFile {
   readonly format: string;

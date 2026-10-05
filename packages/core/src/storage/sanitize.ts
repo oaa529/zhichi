@@ -14,6 +14,8 @@
  * 不追求把每层结构都验一遍：验得越细，加字段时越容易漏改。
  */
 
+import { normalizeAutoBackupConfig } from "../backup/AutoBackup";
+
 /** 判断是否为普通对象。 */
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -207,6 +209,8 @@ export function sanitizeSessionSnapshot<T>(
     drafts,
     digestCursors,
     tokenUsageBySession,
+    // 自动备份配置：结构不对就整体回退默认值（它会在启动时被 runner 读）
+    autoBackupConfig: normalizeAutoBackupConfig(snapshot.autoBackupConfig),
     activeSessionId: safeActiveSessionId,
   } as unknown as T;
 

@@ -2279,6 +2279,126 @@ body {
   animation: zhichi-spin 0.6s linear infinite;
 }
 
+/* ---------- 自动备份 ---------- */
+
+.zhichi-settings__auto-backup {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--zhichi-divider);
+}
+
+.zhichi-settings__auto-backup-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.zhichi-settings__auto-backup-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--zhichi-text);
+}
+
+.zhichi-settings__auto-backup-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--zhichi-text-sub);
+  cursor: pointer;
+}
+
+.zhichi-settings__auto-backup-fields {
+  display: flex;
+  gap: 12px;
+}
+
+.zhichi-settings__auto-backup-fields .zhichi-settings__field {
+  flex: 1;
+}
+
+.zhichi-settings__auto-status {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--zhichi-text-sub);
+  line-height: 1.6;
+}
+
+.zhichi-settings__auto-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.zhichi-settings__auto-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--zhichi-bg-card);
+  border: 1px solid var(--zhichi-divider);
+  border-radius: var(--zhichi-radius-sm);
+}
+
+.zhichi-settings__auto-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.zhichi-settings__auto-item-time {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--zhichi-text);
+}
+
+.zhichi-settings__auto-item-meta {
+  font-size: 11px;
+  color: var(--zhichi-text-sub);
+}
+
+.zhichi-settings__auto-item-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.zhichi-settings__auto-item-btn {
+  padding: 4px 8px;
+  font-size: 11px;
+  color: var(--zhichi-primary);
+  background: transparent;
+  border: 1px solid var(--zhichi-divider);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.zhichi-settings__auto-item-btn:hover:not(:disabled) {
+  background: var(--zhichi-primary-light);
+  border-color: var(--zhichi-primary);
+}
+
+.zhichi-settings__auto-item-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.zhichi-settings__auto-item-btn--danger {
+  color: #b45555;
+}
+
+.zhichi-settings__auto-item-btn--danger:hover:not(:disabled) {
+  background: rgba(224, 122, 122, 0.14);
+  border-color: #b45555;
+}
+
 @keyframes zhichi-spin {
   to { transform: rotate(360deg); }
 }

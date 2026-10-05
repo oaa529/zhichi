@@ -5,15 +5,27 @@
  * 受控组件：数据从 useSessionStore + useChatStore 获取。
  */
 
-import { memo, useState, useCallback } from "react";
+import { memo, useState, useCallback, useEffect } from "react";
 import type { FC } from "react";
 import { useSessionStore } from "../store/sessionStore";
 import { useChatStore } from "../store/chatStore";
 import { PROVIDER_PRESETS } from "@wechat-rp/shared-types";
-import type { ISimulationConfig, IProviderPreset } from "@wechat-rp/shared-types";
+import type {
+  ISimulationConfig,
+  IProviderPreset,
+  IAutoBackupConfig,
+  IAutoBackupSnapshotMeta,
+} from "@wechat-rp/shared-types";
+import {
+  AUTO_BACKUP_INTERVAL_OPTIONS,
+  AUTO_BACKUP_MAX_RETENTION,
+  AUTO_BACKUP_MIN_RETENTION,
+  formatAutoBackupIntervalLabel,
+} from "@wechat-rp/core";
 import type { IConnectionTestResult } from "@wechat-rp/core";
 import { Icon } from "./Icon";
 import { PACING_PRESETS } from "../utils/pacingPresets";
+import { formatRelativeTime } from "../utils/relativeTime";
 
 export interface ISettingsPanelProps {
   /** 重建适配器回调（保存配置后调用）。 */
@@ -24,12 +36,39 @@ export interface ISettingsPanelProps {
   readonly onExportBackup?: () => IBackupActionResult;
   /** 导入备份文件（与本地数据合并，不删除现有内容）。 */
   readonly onImportBackup?: (file: File) => Promise<IBackupActionResult>;
+  /** 自动备份（未配置时不显示该区块）。 */
+  readonly autoBackup?: IAutoBackupApi;
 }
 
 /** 备份操作结果（组装层返回，用于面板内提示）。 */
 export interface IBackupActionResult {
   readonly ok: boolean;
   readonly message: string;
+}
+
+/**
+ * 自动备份的操作入口（由组装层实现）。
+ *
+ * 快照列表由上层持有（runner 读写 IndexedDB 是异步的，面板自身
+ * 只负责展示与调用），任何操作完成后上层刷新 `list`，面板跟着变。
+ */
+export interface IAutoBackupApi {
+  /** 现有快照（新的在前）。 */
+  readonly list: ReadonlyArray<IAutoBackupSnapshotMeta>;
+  /** 最近一次"手动导出成文件"的时间（null = 从没手动导出过）。 */
+  readonly lastManualExportAt: number | null;
+  /** 重新读取快照列表与手动导出时间。 */
+  readonly refresh: () => Promise<void>;
+  /** 立即备份一份。 */
+  readonly runNow: () => Promise<IBackupActionResult>;
+  /** 从某份快照恢复（合并模式）。 */
+  readonly restore: (id: string) => Promise<IBackupActionResult>;
+  /** 把某份快照下载成 JSON 文件。 */
+  readonly download: (id: string) => Promise<IBackupActionResult>;
+  /** 删除某份快照。 */
+  readonly remove: (id: string) => Promise<void>;
+  /** 按新保留份数立刻清理超出部分（改配置后调）。 */
+  readonly applyRetention: (count: number) => Promise<void>;
 }
 
 type TestState =
@@ -39,7 +78,7 @@ type TestState =
   | { status: "error"; result: IConnectionTestResult };
 
 export const SettingsPanel: FC<ISettingsPanelProps> = memo(
-  ({ onRecreateAdapter, onTestConnection, onExportBackup, onImportBackup }) => {
+  ({ onRecreateAdapter, onTestConnection, onExportBackup, onImportBackup, autoBackup }) => {
     const apiConfig = useSessionStore((s) => s.apiConfig);
     const apiKey = useSessionStore((s) => s.apiKey);
     const setApiConfig = useSessionStore((s) => s.setApiConfig);
@@ -47,6 +86,8 @@ export const SettingsPanel: FC<ISettingsPanelProps> = memo(
     const setApiKey = useSessionStore((s) => s.setApiKey);
     const digestConfig = useSessionStore((s) => s.digestConfig);
     const setDigestConfig = useSessionStore((s) => s.setDigestConfig);
+    const autoBackupConfig = useSessionStore((s) => s.autoBackupConfig);
+    const setAutoBackupConfig = useSessionStore((s) => s.setAutoBackupConfig);
 
     const simulationConfig = useChatStore((s) => s.simulationConfig);
     const userProfile = useSessionStore((s) => s.userProfile);
@@ -692,6 +733,15 @@ export const SettingsPanel: FC<ISettingsPanelProps> = memo(
             导入是<strong>合并</strong>模式：同 ID 以备份文件为准，
             新内容追加，不会删除你现在的数据；消息按 ID 去重。
           </p>
+
+          {autoBackup && (
+            <AutoBackupSection
+              api={autoBackup}
+              config={autoBackupConfig}
+              onChange={setAutoBackupConfig}
+              onFeedback={setBackupState}
+            />
+          )}
         </section>
       </div>
     );
@@ -709,3 +759,214 @@ const ERROR_LABELS: Record<IConnectionTestResult["errorKind"] & string, string> 
   timeout: "请求超时",
   unknown: "未知错误",
 };
+
+/** 快照大小的人类可读文案（KB/MB）。 */
+function formatSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/**
+ * 自动备份区块：开关 / 间隔 / 保留份数 / 立即备份 / 快照列表。
+ *
+ * 快照列表来自组装层（IndexedDB），面板只负责展示与调用操作；
+ * 每次操作后调 `api.refresh()` 由上层更新 `api.list`。
+ */
+const AutoBackupSection: FC<{
+  readonly api: IAutoBackupApi;
+  readonly config: IAutoBackupConfig;
+  readonly onChange: (patch: Partial<IAutoBackupConfig>) => void;
+  readonly onFeedback: (result: IBackupActionResult) => void;
+}> = memo(({ api, config, onChange, onFeedback }) => {
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    void api.refresh();
+    // 只挂载时刷一次：列表由上层在操作后更新
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const runNow = useCallback(async () => {
+    setBusy(true);
+    try {
+      onFeedback(await api.runNow());
+    } finally {
+      setBusy(false);
+    }
+  }, [api, onFeedback]);
+
+  const handleSnapshotAction = useCallback(
+    async (action: "download" | "restore" | "remove", id: string) => {
+      if (action === "remove") {
+        if (!window.confirm("删除这份自动备份快照？")) return;
+        setBusy(true);
+        try {
+          await api.remove(id);
+          onFeedback({ ok: true, message: "快照已删除。" });
+        } finally {
+          setBusy(false);
+        }
+        return;
+      }
+      if (action === "restore") {
+        if (
+          !window.confirm(
+            "从这份快照恢复？\n\n与导入备份一样是合并模式：同 ID 以快照为准，不会删除现在的数据。",
+          )
+        ) {
+          return;
+        }
+      }
+      setBusy(true);
+      try {
+        if (action === "download") onFeedback(await api.download(id));
+        else onFeedback(await api.restore(id));
+      } finally {
+        setBusy(false);
+      }
+    },
+    [api, onFeedback],
+  );
+
+  const lastBackup = api.list[0];
+  const statusParts: string[] = [];
+  if (lastBackup) {
+    statusParts.push(
+      `上次自动备份：${formatRelativeTime(lastBackup.at)}（${api.list.length} 份）`,
+    );
+  } else {
+    statusParts.push("还没有自动备份快照");
+  }
+  if (api.lastManualExportAt !== null) {
+    statusParts.push(`上次手动导出：${formatRelativeTime(api.lastManualExportAt)}`);
+  } else {
+    statusParts.push("还没有手动导出过文件");
+  }
+
+  return (
+    <div className="zhichi-settings__auto-backup">
+      <div className="zhichi-settings__auto-backup-head">
+        <span className="zhichi-settings__auto-backup-title">自动备份</span>
+        <label className="zhichi-settings__auto-backup-toggle">
+          <input
+            type="checkbox"
+            checked={config.enabled}
+            onChange={(e) => onChange({ enabled: e.target.checked })}
+          />
+          <span>{config.enabled ? "已开启" : "已关闭"}</span>
+        </label>
+      </div>
+
+      {config.enabled && (
+        <>
+          <div className="zhichi-settings__auto-backup-fields">
+            <label className="zhichi-settings__field">
+              <span className="zhichi-settings__field-label">备份间隔</span>
+              <select
+                value={config.intervalHours}
+                onChange={(e) =>
+                  onChange({ intervalHours: Number(e.target.value) })
+                }
+                className="zhichi-settings__select"
+              >
+                {AUTO_BACKUP_INTERVAL_OPTIONS.map((hours) => (
+                  <option key={hours} value={hours}>
+                    {formatAutoBackupIntervalLabel(hours)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="zhichi-settings__field">
+              <span className="zhichi-settings__field-label">保留份数</span>
+              <input
+                type="number"
+                min={AUTO_BACKUP_MIN_RETENTION}
+                max={AUTO_BACKUP_MAX_RETENTION}
+                value={config.retentionCount}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  if (
+                    !Number.isNaN(value) &&
+                    value >= AUTO_BACKUP_MIN_RETENTION &&
+                    value <= AUTO_BACKUP_MAX_RETENTION
+                  ) {
+                    const rounded = Math.round(value);
+                    onChange({ retentionCount: rounded });
+                    // 改小份数时立刻清掉超出的旧快照，不用等下一次备份
+                    void api.applyRetention(rounded);
+                  }
+                }}
+                className="zhichi-settings__input"
+              />
+            </label>
+          </div>
+          <p className="zhichi-settings__hint">
+            自动备份把快照<strong>留在本机浏览器</strong>里，防的是
+            「数据被写坏 / 误删 / 升级事故」；它防不了清缓存与换机器——
+            请仍定期做一次上方的「导出全部数据」。
+          </p>
+          <div className="zhichi-settings__backup-actions">
+            <button
+              type="button"
+              className="zhichi-settings__backup-btn"
+              onClick={runNow}
+              disabled={busy}
+            >
+              <Icon name="download" size={15} />
+              {busy ? "备份中…" : "立即备份一份"}
+            </button>
+          </div>
+          <p className="zhichi-settings__auto-status" role="status">
+            {statusParts.join(" · ")}
+          </p>
+          {api.list.length > 0 && (
+            <ul className="zhichi-settings__auto-list">
+              {api.list.map((snap) => (
+                <li key={snap.id} className="zhichi-settings__auto-item">
+                  <div className="zhichi-settings__auto-item-main">
+                    <span className="zhichi-settings__auto-item-time">
+                      {formatRelativeTime(snap.at)}
+                    </span>
+                    <span className="zhichi-settings__auto-item-meta">
+                      {formatSize(snap.sizeBytes)} · {snap.counts.sessions} 会话 /{" "}
+                      {snap.counts.messages} 消息
+                    </span>
+                  </div>
+                  <div className="zhichi-settings__auto-item-actions">
+                    <button
+                      type="button"
+                      className="zhichi-settings__auto-item-btn"
+                      disabled={busy}
+                      onClick={() => void handleSnapshotAction("download", snap.id)}
+                    >
+                      下载
+                    </button>
+                    <button
+                      type="button"
+                      className="zhichi-settings__auto-item-btn"
+                      disabled={busy}
+                      onClick={() => void handleSnapshotAction("restore", snap.id)}
+                    >
+                      恢复
+                    </button>
+                    <button
+                      type="button"
+                      className="zhichi-settings__auto-item-btn zhichi-settings__auto-item-btn--danger"
+                      disabled={busy}
+                      onClick={() => void handleSnapshotAction("remove", snap.id)}
+                    >
+                      删除
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      )}
+    </div>
+  );
+});
+
+AutoBackupSection.displayName = "AutoBackupSection";

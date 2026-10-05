@@ -78,6 +78,7 @@ export { SettingsPanel } from "./SettingsPanel";
 export type {
   ISettingsPanelProps,
   IBackupActionResult,
+  IAutoBackupApi,
 } from "./SettingsPanel";
 
 export { CharacterEditor } from "./CharacterEditor";

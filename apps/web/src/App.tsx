@@ -10,7 +10,7 @@
  * 首次启动时注入种子角色数据（DEMO_PROFILE）。
  */
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import type {
   ICharacterProfile,
   ICharacterSprite,
@@ -38,6 +38,7 @@ import {
   buildPlaceholderSprite,
 } from "@wechat-rp/ui-wechat";
 import type { IBackupActionResult, IMessageRuntime } from "@wechat-rp/ui-wechat";
+import type { IAutoBackupApi } from "@wechat-rp/ui-wechat";
 import {
   buildPlotAdvancePrompt,
   buildProactivePrompt,
@@ -65,6 +66,19 @@ import {
   exportBackupToFile,
   importBackupFromFile,
 } from "./backupRunner";
+import type { IImportResult } from "./backupRunner";
+import {
+  applyRetentionCount,
+  deleteAutoBackup,
+  downloadAutoBackup,
+  getLastManualExportAt,
+  listAutoBackups,
+  maybeRunAutoBackup,
+  recordManualExport,
+  restoreAutoBackup,
+  runAutoBackupNow,
+} from "./autoBackupRunner";
+import type { IAutoBackupSnapshotMeta } from "@wechat-rp/shared-types";
 import {
   exportCharacterCardToFile,
   importCharacterCardFile,
@@ -383,6 +397,47 @@ export function App() {
       unsubSession?.();
     };
   }, []);
+
+  /**
+   * 自动备份：定时把数据快照留在浏览器本地。
+   *
+   * 两个触发时机：
+   * 1. 启动后立即检查一次——如果间隔已经到期（或从没备份过），补一份；
+   * 2. 打开期间每 5 分钟检查一次——应用是常驻页，用户一开就是几小时，
+   *    靠"下次打开"才备份会拖到太久。
+   *
+   * 必须等 hydration 完成：快照读的是 store，没 hydrate 就拍，
+   * 拍下来的是一份"初始空状态"，等 hydrate 完再写会覆盖掉真数据。
+   * （与种子注入同一类竞态，见上方注释。）
+   */
+  const [autoBackups, setAutoBackups] = useState<ReadonlyArray<IAutoBackupSnapshotMeta>>([]);
+  const [lastManualExportAt, setLastManualExportAt] = useState<number | null>(null);
+  const refreshAutoBackupState = useCallback(async () => {
+    setAutoBackups(await listAutoBackups());
+    setLastManualExportAt(await getLastManualExportAt());
+  }, []);
+  useEffect(() => {
+    if (!hydrated) return;
+    let disposed = false;
+    const check = async () => {
+      try {
+        const result = await maybeRunAutoBackup();
+        if (result.ran) {
+          console.info(`[auto-backup] 已保存快照（${result.meta.counts.messages} 条消息）`);
+        }
+      } catch (error) {
+        // 快照失败不该影响聊天：只记日志（隐私模式 / 配额满时这里会走到）
+        console.warn("[auto-backup] 自动备份失败：", error);
+      }
+      if (!disposed) await refreshAutoBackupState();
+    };
+    void check();
+    const timer = setInterval(() => void check(), 5 * 60_000);
+    return () => {
+      disposed = true;
+      clearInterval(timer);
+    };
+  }, [hydrated, refreshAutoBackupState]);
 
   // 当 activeSessionId 变化时，保存旧会话状态，恢复新会话状态，切换引擎
   // 注意：依赖 activeSessionId 而非 sessions，避免 session 对象引用变化导致误覆盖
@@ -1144,6 +1199,9 @@ export function App() {
   const handleExportBackup = useCallback((): IBackupActionResult => {
     try {
       const counts = exportBackupToFile();
+      // 记下手动导出的时间：自动备份快照只在浏览器本地，
+      // 面板据此提醒"该换台机器/存一份文件了"
+      void recordManualExport().then(() => refreshAutoBackupState());
       return {
         ok: true,
         message:
@@ -1154,7 +1212,7 @@ export function App() {
       console.warn("[App] 导出备份失败：", error);
       return { ok: false, message: "导出失败，请检查浏览器是否拦截了下载。" };
     }
-  }, []);
+  }, [refreshAutoBackupState]);
 
   /** 从备份文件导入（合并模式）。 */
   const handleImportBackup = useCallback(
@@ -1237,6 +1295,50 @@ export function App() {
 
   const handleJumpHandled = useCallback(() => setPendingJump(null), []);
 
+  /** 设置面板用的自动备份 API（快照列表 + 操作）。 */
+  const autoBackupApi = useMemo<IAutoBackupApi>(() => {
+    const result = (r: IImportResult): IBackupActionResult => ({
+      ok: r.ok,
+      message: r.message,
+    });
+    return {
+      list: autoBackups,
+      lastManualExportAt,
+      refresh: refreshAutoBackupState,
+      runNow: async () => {
+        const r = await runAutoBackupNow();
+        await refreshAutoBackupState();
+        if (r.ran) {
+          return {
+            ok: true,
+            message:
+              `已备份：${r.meta.counts.sessions} 个会话 / ` +
+              `${r.meta.counts.messages} 条消息 / ` +
+              `${r.meta.counts.characters} 个角色`,
+          };
+        }
+        return { ok: true, message: "还没有可备份的数据（没有角色或会话）。" };
+      },
+      restore: async (id) => {
+        const r = await restoreAutoBackup(id);
+        await refreshAutoBackupState();
+        return result(r);
+      },
+      download: async (id) => {
+        const r = await downloadAutoBackup(id);
+        return result(r);
+      },
+      remove: async (id) => {
+        await deleteAutoBackup(id);
+        await refreshAutoBackupState();
+      },
+      applyRetention: async (count) => {
+        await applyRetentionCount(count);
+        await refreshAutoBackupState();
+      },
+    };
+  }, [autoBackups, lastManualExportAt, refreshAutoBackupState]);
+
   const isStreaming = phase === "streaming" || phase === "paused";
 
   // Hydration 未完成
@@ -1261,6 +1363,7 @@ export function App() {
       onTestConnection={handleTestConnection}
       onExportBackup={handleExportBackup}
       onImportBackup={handleImportBackup}
+      autoBackup={autoBackupApi}
       onJumpToMessage={handleJumpToMessage}
       onImportCharacterCard={handleImportCharacterCard}
       onExportCharacterCard={handleExportCharacterCard}

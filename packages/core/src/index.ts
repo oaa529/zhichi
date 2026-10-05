@@ -256,6 +256,19 @@ export {
 } from "./backup/BackupFile";
 
 export {
+  AUTO_BACKUP_INTERVAL_OPTIONS,
+  AUTO_BACKUP_MAX_RETENTION,
+  AUTO_BACKUP_MIN_RETENTION,
+  clampIntervalHours,
+  clampRetentionCount,
+  DEFAULT_AUTO_BACKUP_CONFIG,
+  formatAutoBackupIntervalLabel,
+  isAutoBackupDue,
+  normalizeAutoBackupConfig,
+  pruneAutoBackupSnapshots,
+} from "./backup/AutoBackup";
+
+export {
   buildCharacterCard,
   instantiateCharacterCard,
   parseCharacterCard,

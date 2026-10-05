@@ -23,7 +23,7 @@ import { SessionList } from "./SessionList";
 import { MessageSearchPanel } from "./MessageSearchPanel";
 import { ContactsPanel } from "./ContactsPanel";
 import { SettingsPanel } from "./SettingsPanel";
-import type { IBackupActionResult } from "./SettingsPanel";
+import type { IBackupActionResult, IAutoBackupApi } from "./SettingsPanel";
 import { ContextUsageBadge } from "./ContextUsageBadge";
 import { CharacterEditor } from "./CharacterEditor";
 import type { ICharacterGenOutcome } from "./CharacterEditor";
@@ -44,6 +44,8 @@ export interface IWeChatShellProps {
   readonly onExportBackup?: () => IBackupActionResult;
   /** 导入备份文件（合并，不删除本地数据）。 */
   readonly onImportBackup?: (file: File) => Promise<IBackupActionResult>;
+  /** 自动备份（快照列表 + 操作入口）。 */
+  readonly autoBackup?: IAutoBackupApi;
   /** 从搜索结果跳到某条消息（切会话 + 定位高亮）。 */
   readonly onJumpToMessage?: (sessionId: string, messageId: string) => void;
   /** 导入角色卡文件（新增角色，不覆盖已有）。 */
@@ -68,6 +70,7 @@ export const WeChatShell: FC<IWeChatShellProps> = memo(
     onTestConnection,
     onExportBackup,
     onImportBackup,
+    autoBackup,
     onJumpToMessage,
     onImportCharacterCard,
     onExportCharacterCard,
@@ -198,6 +201,7 @@ export const WeChatShell: FC<IWeChatShellProps> = memo(
                 onTestConnection={onTestConnection}
                 onExportBackup={onExportBackup}
                 onImportBackup={onImportBackup}
+                autoBackup={autoBackup}
               />
             )}
           </div>

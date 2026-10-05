@@ -33,11 +33,13 @@ import type {
   IDigestReport,
   ISessionRuntimeSnapshot,
   IContextUsage,
+  IAutoBackupConfig,
 } from "@wechat-rp/shared-types";
 import { PROVIDER_PRESETS } from "@wechat-rp/shared-types";
 import {
   SCHEMA_VERSION,
   createEmptyPlotState,
+  DEFAULT_AUTO_BACKUP_CONFIG,
   forgetEventsFromTexts,
   forgetMemoriesFromTexts,
   migrateSnapshot,
@@ -116,6 +118,9 @@ export interface ISessionStoreState {
   readonly digestCursors: Record<string, number>;
   /** 后台整理配置。 */
   readonly digestConfig: IDigestConfig;
+
+  /** 自动备份配置（定时把数据快照留在浏览器本地）。 */
+  readonly autoBackupConfig: IAutoBackupConfig;
 
   /**
    * 每会话最近一次请求的上下文占用。
@@ -340,6 +345,9 @@ export interface ISessionStoreState {
   /** 更新整理配置。 */
   setDigestConfig: (patch: Partial<IDigestConfig>) => void;
 
+  /** 更新自动备份配置。 */
+  setAutoBackupConfig: (patch: Partial<IAutoBackupConfig>) => void;
+
   /** 记录某会话最近一次请求的上下文占用。 */
   setContextUsage: (sessionId: string, usage: IContextUsage) => void;
 
@@ -493,6 +501,7 @@ export const useSessionStore = create<ISessionStoreState>()(
       plotStates: {},
       digestCursors: {},
       digestConfig: DEFAULT_DIGEST_CONFIG,
+      autoBackupConfig: DEFAULT_AUTO_BACKUP_CONFIG,
       contextUsageBySession: {},
       digestFailures: {},
       digestReports: {},
@@ -1215,6 +1224,12 @@ export const useSessionStore = create<ISessionStoreState>()(
         }));
       },
 
+      setAutoBackupConfig: (patch) => {
+        set((state) => ({
+          autoBackupConfig: { ...state.autoBackupConfig, ...patch },
+        }));
+      },
+
       setContextUsage: (sessionId, usage) => {
         set((state) => ({
           contextUsageBySession: {
@@ -1288,6 +1303,7 @@ export const useSessionStore = create<ISessionStoreState>()(
         plotStates: state.plotStates,
         digestCursors: state.digestCursors,
         digestConfig: state.digestConfig,
+        autoBackupConfig: state.autoBackupConfig,
         digestReports: state.digestReports,
         unreadMarkers: state.unreadMarkers,
         tokenUsageBySession: state.tokenUsageBySession,
