@@ -13,6 +13,8 @@ import { PROVIDER_PRESETS } from "@wechat-rp/shared-types";
 import type {
   ISimulationConfig,
   IProviderPreset,
+  IApiConfig,
+  ApiProvider,
   IAutoBackupConfig,
   IAutoBackupSnapshotMeta,
 } from "@wechat-rp/shared-types";
@@ -137,16 +139,16 @@ export const SettingsPanel: FC<ISettingsPanelProps> = memo(
       setTestState({ status: "idle" });
     }, [setApiKey]);
 
-    const handleConfigChange = useCallback(<K extends keyof typeof apiConfig>(
+    const handleConfigChange = useCallback(<K extends keyof IApiConfig>(
       key: K,
-      value: (typeof apiConfig)[K],
+      value: IApiConfig[K],
     ) => {
-      setApiConfig({ [key]: value } as Partial<typeof apiConfig>);
+      setApiConfig({ [key]: value } as Partial<IApiConfig>);
       setSaved(false);
       setTestState({ status: "idle" });
     }, [setApiConfig]);
 
-    const handleProviderChange = useCallback((provider: typeof apiConfig.provider) => {
+    const handleProviderChange = useCallback((provider: ApiProvider) => {
       setProvider(provider);
       setSaved(false);
       setTestState({ status: "idle" });

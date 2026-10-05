@@ -175,7 +175,7 @@ export function buildSnippet(
   // 让命中点大致居中：两侧各留一半，再按边界夹取
   const half = Math.floor((maxChars - keyword.length) / 2);
   let start = Math.max(0, matchAt - half);
-  let end = Math.min(text.length, start + maxChars);
+  const end = Math.min(text.length, start + maxChars);
   start = Math.max(0, end - maxChars);
 
   const prefix = start > 0 ? "…" : "";

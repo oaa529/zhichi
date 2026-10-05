@@ -665,7 +665,6 @@ export function App() {
   useEffect(() => {
     if (!hydrated) return;
     engineManager.retainOnly(sessionIdsKey ? sessionIdsKey.split("|") : []);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionIdsKey, hydrated, engineManager]);
 
   // 活跃会话收到新消息时，更新会话列表预览（不增加未读，因为用户正在查看）

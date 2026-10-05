@@ -15,6 +15,9 @@ import type { ILoreEntry } from "@wechat-rp/shared-types";
 import { useSessionStore } from "../store/sessionStore";
 import { Icon } from "./Icon";
 
+/** 稳定的空列表引用：作为「这个角色还没有世界书条目」的占位。 */
+const EMPTY: ReadonlyArray<ILoreEntry> = [];
+
 /** 编辑器提交的草稿。 */
 interface ILoreDraft {
   readonly keys: ReadonlyArray<string>;
@@ -39,7 +42,8 @@ export const LoreTab: FC = memo(() => {
   const characterId =
     session?.participantIds.find((id) => id !== "user") ?? null;
   const character = characterId ? characters[characterId] : undefined;
-  const entries = characterId ? loreMap[characterId] ?? [] : [];
+  // 空数组提成模块级常量：`?? []` 每次渲染都是新引用，会让下方 useMemo 失效
+  const entries = characterId ? loreMap[characterId] ?? EMPTY : EMPTY;
 
   const filtered = useMemo(() => {
     const sorted = [...entries].sort((a, b) => a.order - b.order);

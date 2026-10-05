@@ -411,6 +411,8 @@ rustup override set stable-x86_64-pc-windows-gnu   # 在仓库根执行，只对
 | `pnpm test` | 运行全部测试（vitest） |
 | `pnpm test:coverage` | 测试 + 覆盖率报告 |
 | `pnpm typecheck` | 四个包全量类型检查 |
+| `pnpm lint` | ESLint 全仓库检查（CI 同款） |
+| `pnpm lint:fix` | lint 并自动修 |
 | `pnpm build` | 构建 `core` 与 `ui-wechat` 两个库 |
 | `pnpm build:web` | 构建 web 应用产物 |
 
@@ -682,8 +684,15 @@ agnes-2.5-flash 与 2.5-pro 上 A 组（不注入）本来就 0/4 干净，
 - **自动备份防不了"清缓存 / 换机器"**：快照存在同一台设备的 IndexedDB 里，
   清缓存会连它一起清掉。所以它防的是"数据被写坏 / 误删 / 升级事故"；
   换机器 / 防清缓存仍要靠手动导出文件（设置面板会提醒上次手动导出时间）。
-- 尚未接入 lint 工具链，但 `tsc --strict` 已开启 `noUnusedLocals` /
-  `noUnusedParameters`（死代码会被 typecheck 拦下来），加上 938 个测试保证质量。
+- **已接入 lint**：`pnpm lint`（ESLint 9 flat config + typescript-eslint），
+  CI 里与 typecheck / 测试 / 构建并列跑。规则刻意收得很紧但**不碰格式**
+  （不引 prettier）：只抓真问题——`no-explicit-any`（守住「零 any」宣称）、
+  `react-hooks/rules-of-hooks`、`exhaustive-deps`（warn）、
+  `react-refresh/only-export-components`。全角空格（U+3000）在中文项目里是
+  合法排版字符（导出的 Markdown、界面文案刻意用它），所以
+  `no-irregular-whitespace` 只检查真实代码位置、放过字符串/模板/注释。
+  `work/` 下的真机探针是一次性脚本（console 是产物、未使用变量是常态），
+  单独放宽。
 - **世界书不做「递归扫描」**：条目内容不会再去触发别的条目（社区卡里叫
   `recursive_scanning`）。长设定集上那会滚雪球，注入量不可控，因此只扫一遍。
 - **AI 生成角色需要配好 API**：演示（mock）模式下点「生成」会提示先去设置里配置。

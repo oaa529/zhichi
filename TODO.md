@@ -116,6 +116,71 @@
 
 ---
 
+# 第一百零八轮：接入 lint（README 挂了 104 轮的那条「尚未接入」）
+
+## 一、规则集怎么定的（先摸底再配，不抄模板）
+
+配置前先数了三样东西，按结果定规则，而不是照搬 recommended 全家桶：
+
+| 摸底 | 结果 | 决策 |
+| --- | --- | --- |
+| `eslint-disable` 注释 | 10 处，**全部**是 `react-hooks/exhaustive-deps` | react-hooks 插件必须进规则集，否则这些注释全变"无用指令" |
+| `: any` / `<any>` 用法 | **0 处**（README 宣称"零 any"） | `no-explicit-any` 设 error——把宣称变成机器可守的 |
+| `console.*` 用法 | 24 处，全是带前缀的刻意日志 | 不禁 console（否则得给 24 处加豁免） |
+
+最终只开 7 条核心规则；**格式/风格一条不配**（不引 prettier）：
+风格靠 review，格式规则只会制造无意义 diff。
+
+## 二、几个关键取舍
+
+1. **ESLint 9 而不是 10**：10 要 Node ≥20.19，而项目 `engines` 写着
+   `node >= 18`（app 需要）。降到 9.39（^18.18 就够），不为了工具链
+   抬高用户的环境要求。
+2. **typescript-eslint 用非类型检查版**：类型正确性已由 `tsc --strict`
+   + 938 个测试把关，类型检查版 lint 慢且会和 tsc 重复。只补 tsc
+   不管的：no-explicit-any、hooks 规则。
+3. **react-hooks v7 只开 2 条经典规则**：v7 推荐集里那批面向 React
+   Compiler 的新规则（immutability / purity / set-state-in-effect…）
+   对本项目是噪音，暂不启用。
+4. **全角空格（U+3000）按合法字符放过**：`no-irregular-whitespace` 本是
+   给拉丁代码抓隐形字符的，但导出 Markdown 的分隔线、界面文案刻意用它
+   排版。规则保留、但 `skipComments/skipStrings/skipTemplates/skipRegExps`
+   全开——真实代码位置仍然查得到。
+5. **work/ 探针目录单独放宽**（node globals + 关 unused-vars /
+   关 no-irregular-whitespace）：一次性脚本，console 输出是产物、
+   未使用变量是探针常态、中文载荷里刻意用全角空格。
+
+## 三、首跑 46 problems → 修到 0（都是真问题，不是噪音）
+
+| 文件 | 问题 | 处理 |
+| --- | --- | --- |
+| messageSearch.ts | `prefer-const`：`let end` 未重新赋值 | `--fix` 自动改 |
+| App.tsx:668 | **失效的 disable 注释**（deps 其实写全了） | 删掉注释 |
+| ChatSessionView.tsx | effect 用了 `sorted` 却没进 deps（跳转中途来新消息不会重定位） | 补 `sorted`（它本就是 useMemo，顺带在注释里说明"消息变化时重新定位是意图"） |
+| LoreTab / MemoryTab | `entries`/`memories` 的 `?? []` 每次渲染新引用，**useMemo 实际失效** | 提升为模块级 `EMPTY` 常量——这是 lint 抓到的真性能问题 |
+| SettingsPanel | `typeof apiConfig.provider` 把运行时值拖进 useCallback 类型，deps 误报 | 改用显式类型 `ApiProvider` / `IApiConfig`，从根上断开 |
+| work/*.mts | globals / 未使用变量 | 探针目录覆盖（见上） |
+
+## 四、接入口子
+
+- 根 `package.json`：`pnpm lint` / `pnpm lint:fix`
+- CI：在 typecheck 与测试之间插 `pnpm lint` 一步（现在五步：装依赖 /
+  类型检查 / **lint** / 测试 / 构建）
+- README：常用脚本表补两行；把「已知限制」里挂了 104 轮的
+  「尚未接入 lint 工具链」改写为「已接入」+ 规则取向说明
+
+## 五、验证
+
+```bash
+pnpm lint          # 0 problems
+pnpm test          # 938 个测试全绿（79 个文件）
+pnpm -r typecheck  # 4 包全绿
+pnpm build         # core + ui-wechat 成功
+pnpm build:web     # 532.09 KB / gzip 181.08 KB
+```
+
+---
+
 # 第一百零七轮：桌面原生三件套（备份落盘 / 托盘 / 单实例）
 
 ## 一、为什么是这三个

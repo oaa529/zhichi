@@ -14,6 +14,9 @@ import { useSessionStore } from "../store/sessionStore";
 import { formatRelativeTime } from "../utils/relativeTime";
 import { Icon } from "./Icon";
 
+/** 稳定的空列表引用：作为「这个角色还没有记忆」的占位。 */
+const EMPTY: ReadonlyArray<IMemory> = [];
+
 /** 记忆类别中文标签。 */
 const KIND_LABELS: Record<MemoryKind, string> = {
   fact: "事实",
@@ -83,7 +86,8 @@ export const MemoryTab: FC<IMemoryTabProps> = memo(
     const characterId =
       session?.participantIds.find((id) => id !== "user") ?? null;
     const character = characterId ? characters[characterId] : undefined;
-    const memories = characterId ? memoriesMap[characterId] ?? [] : [];
+    // 空数组提成模块级常量：`?? []` 每次渲染都是新引用，会让 useMemo 失效
+    const memories = characterId ? memoriesMap[characterId] ?? EMPTY : EMPTY;
 
     /**
      * 检索预览结果。

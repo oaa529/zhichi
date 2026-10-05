@@ -1,4 +1,4 @@
-# 每次推送 / PR 都跑一遍：类型检查、测试、构建。
+# 每次推送 / PR 都跑一遍：类型检查、lint、测试、构建。
 #
 # 开源仓库的意义：别人看到绿标才敢 clone；而且我一个人在本地跑，
 # 换台机器/换个 Node 版本可能就红了——CI 是那个"别人的机器"。
@@ -30,6 +30,9 @@ jobs:
 
       - name: 类型检查
         run: pnpm -r typecheck
+
+      - name: Lint
+        run: pnpm lint
 
       - name: 单元/集成测试
         run: pnpm test

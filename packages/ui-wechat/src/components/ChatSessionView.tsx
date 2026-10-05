@@ -442,7 +442,9 @@ const ChatSessionViewInner: FC<IChatSessionViewInternalProps> = ({
       if (retryTimer !== undefined) window.clearTimeout(retryTimer);
       if (settleTimer !== undefined) window.clearTimeout(settleTimer);
     };
-  }, [jumpToMessageId, localJumpId, onJumpHandled]);
+    // sorted 是 useMemo：消息变化（跳转中途又来新消息）时重新定位一次，
+    // 这正是意图——新气泡会把布局顶偏
+  }, [jumpToMessageId, localJumpId, onJumpHandled, sorted]);
 
   // 高亮 2 秒后自动淡出
   useEffect(() => {
