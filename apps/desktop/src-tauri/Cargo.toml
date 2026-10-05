@@ -8,7 +8,10 @@ edition = "2021"
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [] }
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-single-instance = "2"
+# 只用来取「文档」目录（备份落盘位置）；tauri 内部也是用它
+dirs = "7"
 
 [profile.release]
 # 桌面壳不跑重逻辑（全部在 WebView 里），体积优先

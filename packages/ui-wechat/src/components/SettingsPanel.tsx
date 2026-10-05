@@ -57,6 +57,8 @@ export interface IAutoBackupApi {
   readonly list: ReadonlyArray<IAutoBackupSnapshotMeta>;
   /** 最近一次"手动导出成文件"的时间（null = 从没手动导出过）。 */
   readonly lastManualExportAt: number | null;
+  /** 是否跑在桌面端（有"落盘"这条额外出口时为 true）。 */
+  readonly desktop: boolean;
   /** 重新读取快照列表与手动导出时间。 */
   readonly refresh: () => Promise<void>;
   /** 立即备份一份。 */
@@ -905,6 +907,8 @@ const AutoBackupSection: FC<{
             自动备份把快照<strong>留在本机浏览器</strong>里，防的是
             「数据被写坏 / 误删 / 升级事故」；它防不了清缓存与换机器——
             请仍定期做一次上方的「导出全部数据」。
+            {api.desktop &&
+              "桌面端会额外把每份快照写进「文档/咫尺备份」，可以扛过清缓存。"}
           </p>
           <div className="zhichi-settings__backup-actions">
             <button

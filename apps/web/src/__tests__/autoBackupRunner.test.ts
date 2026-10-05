@@ -306,6 +306,57 @@ describe("快照列表容错", () => {
   });
 });
 
+describe("桌面端落盘（Tauri）", () => {
+  function mockTauri(impl?: (cmd: string, args?: Record<string, unknown>) => Promise<string>) {
+    const invoke = vi.fn(
+      impl ?? (async () => "D:\\Documents\\咫尺备份\\zhichi-backup-x.json"),
+    );
+    (window as unknown as Record<string, unknown>).__TAURI_INTERNALS__ = {
+      invoke: invoke as unknown as <T>(
+        cmd: string,
+        args?: Record<string, unknown>,
+      ) => Promise<T>,
+    };
+    return invoke;
+  }
+
+  function clearTauri(): void {
+    delete (window as unknown as Record<string, unknown>).__TAURI_INTERNALS__;
+  }
+
+  afterEach(clearTauri);
+
+  it("桌面端备份成功时，快照同时写进「文档/咫尺备份」（同一个 buildBackup 内容）", async () => {
+    const invoke = mockTauri();
+    await runAutoBackupNow(NOW);
+
+    expect(invoke).toHaveBeenCalledTimes(1);
+    const [cmd, args] = invoke.mock.calls[0]!;
+    expect(cmd).toBe("save_backup_file");
+    const payload = args as { text: string; filename: string };
+    expect(payload.filename).toBe("zhichi-backup-20260913-152000.json");
+    // 落盘内容与 IndexedDB 快照逐字节一致
+    const snap = await storage.getItem<string>("auto-backup:snapshot:" + NOW);
+    expect(payload.text).toBe(snap);
+  });
+
+  it("落盘失败**不影响**本地快照（备份主流程不受牵连）", async () => {
+    mockTauri(async () => {
+      throw new Error("磁盘满了");
+    });
+    const result = await runAutoBackupNow(NOW);
+
+    expect(result.ran).toBe(true);
+    expect(await listAutoBackups()).toHaveLength(1);
+  });
+
+  it("web 端（无 Tauri）不尝试落盘", async () => {
+    await runAutoBackupNow(NOW);
+    // 没有 internals 时 saveBackupToDisk 直接返回 not-desktop，不会调 invoke
+    expect(await listAutoBackups()).toHaveLength(1);
+  });
+});
+
 describe("与手动备份的一致性", () => {
   it("自动快照与手动导出的备份文本内容一致（同一个 buildBackup 路径）", async () => {
     const manual = buildBackupText(NOW);

@@ -116,6 +116,75 @@
 
 ---
 
+# 第一百零七轮：桌面原生三件套（备份落盘 / 托盘 / 单实例）
+
+## 一、为什么是这三个
+
+上一轮留下的"只做了壳"清单里，按"补上已承诺的能力"排个序，
+这三个最值：**备份落盘**直接消掉 README 里那条"自动备份防不了清缓存"的
+限制（写进「文档/咫尺备份」的文件才是真备份）；**托盘/关闭到托盘**让常驻
+应用不会因为误点 × 中断后台备份；**单实例**防两个窗口互踩 IndexedDB。
+开机自启、系统通知、文件系统直存聊天记录本轮不做（没必要，或工程量大）。
+
+## 二、做法
+
+**Rust 侧**（`src-tauri/src/main.rs`，约 30 行逻辑）：
+
+- `save_backup_file(text, filename)` command：`dirs::document_dir()` 定位
+  「文档」→ `咫尺备份` 子目录（create_dir_all）→ 写文件，返回完整路径。
+  文件名做最小防呆（不允许路径分隔符）。**刻意不用 fs 插件**：
+  写盘动作在 Rust 里完成，前端不需要任何 fs 权限，capability 保持极简。
+- 托盘：`TrayIconBuilder` + `MenuItem`（显示主窗口 / 退出）。
+- 关闭拦截：`on_window_event` 里匹配 `CloseRequested { api, .. }` →
+  `api.prevent_close()` + `window.hide()`；`app.exit(0)` 才真退。
+- 单实例：`tauri-plugin-single-instance`，第二个实例启动时把已有窗口
+  show + set_focus（新进程自己退掉）。
+- 新增依赖：`tauri-plugin-single-instance`、`dirs`（tauri 内部也用它），
+  tauri 开 `tray-icon` feature。
+
+**前端侧**：
+
+- `apps/web/src/desktopBridge.ts`：`isDesktopApp()`（看
+  `window.__TAURI_INTERNALS__` 是否存在）+ `saveBackupToDisk()`。
+  **刻意不引 `@tauri-apps/api`**：只有一个 command，直接走它内部的
+  invoke 入口；少一个依赖，web 端也不用为用不到的东西付体积。
+  web 端（无 Tauri）安全返回"非桌面端"，绝不抛。
+- `autoBackupRunner.writeSnapshot()`：IndexedDB 快照写成功后，
+  桌面端**额外**落盘一份；失败只 console.warn、不影响本地快照
+  （备份主流程与落盘是"锦上添花"关系）。
+- 设置面板「自动备份」区块：`IAutoBackupApi` 加 `desktop` 标记，
+  桌面端多显示一句"会额外写进「文档/咫尺备份」"。
+
+## 三、验证（真机，全部过）
+
+```
+构建：cargo check / pnpm desktop:dev 均零错误
+落盘：清空旧索引后重启 → 文档\咫尺备份\zhichi-backup-20261005-172145.json（31.7KB）
+      JSON.parse 校验 format=zhichi-backup / 2 个角色 —— 内容与手动导出同格式
+单实例：运行中再启动一个 exe → 进程数仍为 1（原窗口被聚焦）
+收托盘：CDP 调 window.close() → 进程数 1 → 1（活着，窗口隐藏）
+回归：pnpm test 938 全绿 / typecheck 4 包 / build / build:web 全过
+```
+
+## 四、排错记录（两个坑，都记下来省下次时间）
+
+1. **"落盘没生效"的假象**：首次排查时文档目录怎么都没有文件。
+   真相是本地快照早已存在（上一轮旧代码建的），`maybeRunAutoBackup`
+   按"未到期"直接跳过，落盘代码**一次都没跑过**。删掉
+   `auto-backup:index` + 对应 snapshot key 重启即可复现完整链路。
+2. **App "自己死掉"的假象**：手动启动 exe 不跑 vite，WebView 加载的是
+   `chrome-error://` 错误页；更要命的是**工具会话结束会回收进程树**，
+   下一次检查时进程没了。教训：启动与验证必须在同一个命令调用里完成，
+   且必须用 `pnpm desktop:dev` 起全链路（vite + cargo）。
+
+顺带记一个**可复用的调试手段**：给进程设
+`WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9222`
+后可用 CDP 连 WebView，`Runtime.evaluate` 能直接读 window、调 invoke、
+翻 IndexedDB 的 key——本轮三个原生能力全靠它验证（CDP 辅助脚本写在
+`%TEMP%\zhichi-cdp.ps1`，一次性工具不入库）。
+
+---
+
 # 第一百零六轮：桌面端壳（Tauri v2）——顺带趟过一个"假安装"的 SDK 大坑
 
 ## 一、目标与界限

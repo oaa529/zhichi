@@ -29,6 +29,7 @@ function makeApi(overrides: Partial<IAutoBackupApi> = {}): IAutoBackupApi {
   return {
     list: [snapshot(NOW)],
     lastManualExportAt: null,
+    desktop: false,
     refresh: vi.fn(async () => undefined),
     runNow: vi.fn(async () => ok("已备份：1 个会话 / 40 条消息 / 1 个角色")),
     restore: vi.fn(async () => ok("导入完成：1 个会话 / 40 条消息 / 2 条记忆")),
@@ -204,5 +205,15 @@ describe("自动备份交互", () => {
 
     expect(screen.getByText(/还没有自动备份快照/)).toBeTruthy();
     expect(screen.queryByText("下载")).toBeNull();
+  });
+
+  it("桌面端在提示文案里说明「额外写进文档/咫尺备份」", () => {
+    renderPanel(makeApi({ desktop: true }));
+    expect(screen.getByText(/文档\/咫尺备份/)).toBeTruthy();
+  });
+
+  it("web 端不显示落盘提示", () => {
+    renderPanel(makeApi({ desktop: false }));
+    expect(screen.queryByText(/文档\/咫尺备份/)).toBeNull();
   });
 });

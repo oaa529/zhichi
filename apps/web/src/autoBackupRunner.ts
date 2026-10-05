@@ -36,8 +36,9 @@ import {
 } from "@wechat-rp/core";
 import { useSessionStore } from "@wechat-rp/ui-wechat";
 import { downloadTextFile } from "./download";
-import { readLocalSnapshot, restoreFromBackupText } from "./backupRunner";
+import { backupFileName, readLocalSnapshot, restoreFromBackupText } from "./backupRunner";
 import type { IImportResult } from "./backupRunner";
+import { isDesktopApp, saveBackupToDisk } from "./desktopBridge";
 
 /** 快照索引的存储 key（只放元数据，正文单独存）。 */
 const INDEX_KEY = "auto-backup:index";
@@ -116,7 +117,6 @@ export function hasBackupData(counts: IBackupCounts): boolean {
  * 执行一次自动备份（内部实现）。
  *
  * @param now 当前时间（测试注入）
- * @param force 为 true 时忽略到期判定（"立即备份"按钮）；仍跳过空数据
  */
 async function writeSnapshot(now: number): Promise<IAutoBackupSnapshotMeta> {
   const file = buildBackup(readLocalSnapshot(), now);
@@ -142,6 +142,17 @@ async function writeSnapshot(now: number): Promise<IAutoBackupSnapshotMeta> {
   for (const id of pruneIds) {
     if (id === meta.id) continue;
     await storage.removeItem(snapshotKey(id));
+  }
+
+  // 桌面端：额外落到「文档/咫尺备份/」。IndexedDB 快照扛不住清缓存，
+  // 这份文件才是真备份。失败只记日志、不影响本地快照本身。
+  if (isDesktopApp()) {
+    const disk = await saveBackupToDisk(text, backupFileName(now));
+    if (!disk.ok) {
+      console.warn("[auto-backup] 落盘失败（本地快照已存好）：", disk.message);
+    } else {
+      console.info(`[auto-backup] 已写入磁盘：${disk.path}`);
+    }
   }
 
   return meta;

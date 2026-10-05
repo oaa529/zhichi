@@ -78,6 +78,7 @@ import {
   restoreAutoBackup,
   runAutoBackupNow,
 } from "./autoBackupRunner";
+import { isDesktopApp } from "./desktopBridge";
 import type { IAutoBackupSnapshotMeta } from "@wechat-rp/shared-types";
 import {
   exportCharacterCardToFile,
@@ -1297,6 +1298,8 @@ export function App() {
 
   /** 设置面板用的自动备份 API（快照列表 + 操作）。 */
   const autoBackupApi = useMemo<IAutoBackupApi>(() => {
+    // 桌面端（Tauri）才有"额外落盘"这条出口，据此决定面板显不显示落盘提示
+    const desktop = isDesktopApp();
     const result = (r: IImportResult): IBackupActionResult => ({
       ok: r.ok,
       message: r.message,
@@ -1304,6 +1307,7 @@ export function App() {
     return {
       list: autoBackups,
       lastManualExportAt,
+      desktop,
       refresh: refreshAutoBackupState,
       runNow: async () => {
         const r = await runAutoBackupNow();

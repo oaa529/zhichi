@@ -65,8 +65,11 @@ export function readLocalSnapshot(): IBackupPayload {
   };
 }
 
-/** 生成带时间戳的文件名（本地时间，方便肉眼排序）。 */
-function backupFileName(now: number): string {
+/**
+ * 生成带时间戳的文件名（本地时间，方便肉眼排序）。
+ * 手动导出与桌面端落盘共用同一套命名。
+ */
+export function backupFileName(now: number): string {
   const d = new Date(now);
   const pad = (n: number): string => String(n).padStart(2, "0");
   const stamp =
