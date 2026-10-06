@@ -151,10 +151,15 @@ body {
 }
 
 .zhichi-shell__main-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--zhichi-text);
-}
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--zhichi-text);
+    /* 超长会话名/角色名：省略号收尾，别硬裁（硬裁看起来像渲染坏了） */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+    }
 
 /* 标题 + 在场状态（在线 / 在上课 / 已就寝）的竖排组合 */
 .zhichi-shell__main-heading {
@@ -1144,7 +1149,7 @@ body {
   border: 2px solid transparent;
   border-radius: var(--zhichi-radius-md);
   cursor: pointer;
-  transition: all 0.18s;
+  transition: all 0.15s;
   text-align: center;
 }
 
@@ -1196,7 +1201,7 @@ body {
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.18s;
+  transition: all 0.15s;
   background: transparent;
   color: var(--zhichi-text-sub);
 }
@@ -2099,7 +2104,7 @@ body {
   background: transparent;
   text-align: left;
   cursor: pointer;
-  transition: background 0.12s;
+  transition: background 0.15s;
 }
 
 .zhichi-message-search__hit:hover {
