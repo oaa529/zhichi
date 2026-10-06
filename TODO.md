@@ -116,6 +116,48 @@
 
 ---
 
+# 第一百一十轮：细节打磨第一轮（全局状态层 + 一个真 bug）
+
+从"功能基本齐了"转到"打磨"，方法换成**实测**而不是看图说话：
+启动真机 + CDP 量几何 + 扫 CSS 状态覆盖，能写成数字的才动手。
+
+## 一、实测结果（其中一项是真 bug）
+
+| 检查项 | 方法 | 结果 |
+| --- | --- | --- |
+| 布局几何 | CDP `getBoundingClientRect` 量 8 个关键元素 | 全部正确（logo/导航项居中、输入栏底部贴合、发送键 36×36）——**没瞎改** |
+| `var()` 引用完整性 | 扫全部 `var(--zhichi-*)` 与 `:root` 定义取差集 | **抓到 13 处 `--zhichi-text-main` 从未定义**（靠父级继承色勉强显示，语义已断）→ 全部改为 `--zhichi-text` |
+| 键盘焦点 | 搜 `:focus-visible` | **0 处**：按钮/导航/列表项完全没有键盘焦点环（输入框有自己的 focus 环） |
+| 选区色 | 搜 `::selection` | 0 处，用默认浏览器蓝 |
+| 滚动条 | 搜 `scrollbar` | 0 处，Windows 默认粗灰条在浅灰卡片里非常扎眼 |
+| 减少动画 | 搜 `prefers-reduced-motion` | 0 处（本项目有 14 组关键帧、打字机/错字/淡入全在动） |
+
+## 二、修法（统一放在文件末尾「细节打磨层」，一个区块管所有跨组件细节）
+
+- **focus-visible**：`:where(button, [role=tab], a, [tabindex]):focus-visible`
+  两像素主色环。用 `:where()` 把特异性压到 0，**不会盖掉**输入框们自己的
+  focus 样式（11 处现有规则全部保留）
+- **选区**：主色蓝 22% 透明度底，`color: inherit`
+- **细滚动条**：8px、圆角、平时 28% 灰、hover 50%，Firefox 走
+  `scrollbar-width: thin` + `scrollbar-color`，Chromium 走
+  `::-webkit-scrollbar` 全家；thumb 用 `border: 2px solid transparent` +
+  `background-clip: content-box` 让滑道比轨道更细
+- **加载屏呼吸**：启动时"正在恢复聊天记录…"从纯文字改为 1.4s 轻微呼吸。
+  试过 `content` 关键帧做跳动的点——content 属性不可插值，浏览器全部不支持，
+  已在注释里记下"要做跳点请上三个 span"
+- **减少动画**：`prefers-reduced-motion: reduce` 时全局动画/过渡降到 0.01ms。
+  本项目动效极多，用户系统里关掉动画时应当全部直接呈现
+
+## 三、验证
+
+```
+944 测试 / typecheck / lint / build:web 全绿（CSS 77.19 KB / gzip 11.12 KB）
+真机复测：scrollbar-width: thin 已生效；focus-visible 规则已进样式表；
+截图设置页可见细滚动条 thumb（#E8E8E8 段）
+```
+
+---
+
 # 第一百零九轮：体验优化三件 + 界面改版（浅灰卡片式 + lucide 图标）
 
 ## 一、体验优化（先做，全是证据驱动）

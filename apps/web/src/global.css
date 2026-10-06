@@ -1043,7 +1043,7 @@ body {
   overflow: auto;
   border-radius: var(--zhichi-radius-sm);
   background: var(--zhichi-bg-soft);
-  color: var(--zhichi-text-main);
+  color: var(--zhichi-text);
   font-family: SFMono-Regular, Consolas, monospace;
   font-size: 11px;
   line-height: 1.6;
@@ -2053,7 +2053,7 @@ body {
   outline: none;
   background: transparent;
   font-size: 13px;
-  color: var(--zhichi-text-main);
+  color: var(--zhichi-text);
 }
 
 .zhichi-message-search__input::-webkit-search-cancel-button {
@@ -2115,7 +2115,7 @@ body {
 .zhichi-message-search__hit-name {
   font-size: 12px;
   font-weight: 600;
-  color: var(--zhichi-text-main);
+  color: var(--zhichi-text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -4148,7 +4148,7 @@ body {
   border: 1px solid var(--zhichi-border);
   border-radius: var(--zhichi-radius-sm);
   background: var(--zhichi-bg-card);
-  color: var(--zhichi-text-main);
+  color: var(--zhichi-text);
   font-size: 13px;
   outline: none;
 }
@@ -4171,7 +4171,7 @@ body {
 }
 
 .zhichi-memory-tab__retrieval-content {
-  color: var(--zhichi-text-main);
+  color: var(--zhichi-text);
 }
 
 .zhichi-memory-tab__retrieval-why {
@@ -4212,7 +4212,7 @@ body {
   outline: none;
   background: transparent;
   font-size: 13px;
-  color: var(--zhichi-text-main);
+  color: var(--zhichi-text);
 }
 
 .zhichi-memory-list {
@@ -4295,7 +4295,7 @@ body {
   margin: 0;
   font-size: 13px;
   line-height: 1.55;
-  color: var(--zhichi-text-main);
+  color: var(--zhichi-text);
   word-break: break-word;
 }
 
@@ -4385,7 +4385,7 @@ body {
   border-radius: var(--zhichi-radius-sm);
   border: 1px solid var(--zhichi-border);
   background: var(--zhichi-bg-card);
-  color: var(--zhichi-text-main);
+  color: var(--zhichi-text);
   font-size: 13px;
   font-family: inherit;
   resize: vertical;
@@ -4434,7 +4434,7 @@ body {
   justify-content: space-between;
   font-size: 13px;
   font-weight: 600;
-  color: var(--zhichi-text-main);
+  color: var(--zhichi-text);
 }
 
 .zhichi-plot-tab__section-actions {
@@ -4484,7 +4484,7 @@ body {
   padding-left: 16px;
   font-size: 12px;
   line-height: 1.6;
-  color: var(--zhichi-text-main);
+  color: var(--zhichi-text);
 }
 
 .zhichi-plot-tab__diff-field {
@@ -4514,7 +4514,7 @@ body {
   border-radius: var(--zhichi-radius-sm);
   border: 1px solid var(--zhichi-border);
   background: var(--zhichi-bg-card);
-  color: var(--zhichi-text-main);
+  color: var(--zhichi-text);
   font-size: 13px;
   font-family: inherit;
   resize: vertical;
@@ -4542,7 +4542,7 @@ body {
   border-radius: var(--zhichi-radius-sm);
   border: 1px solid var(--zhichi-border);
   background: var(--zhichi-bg-card);
-  color: var(--zhichi-text-main);
+  color: var(--zhichi-text);
   font-size: 13px;
 }
 
@@ -4618,6 +4618,95 @@ body {
   margin: 0;
   font-size: 13px;
   line-height: 1.5;
-  color: var(--zhichi-text-main);
+  color: var(--zhichi-text);
   word-break: break-word;
+}
+
+/* ============================================================
+ * 细节打磨层
+ * 这一层只放"跨组件的通用细节"：键盘焦点、选区色、滚动条、
+ * 加载态、减少动画偏好。都是小东西，但缺了它们整套界面会显得"毛糙"。
+ * ============================================================ */
+
+/*
+ * 键盘焦点环。
+ * :where() 让特异性为 0，不会盖掉各输入框自己的 focus 样式；
+ * 只给"看不见焦点的控件"（按钮、导航、列表项）补上。
+ */
+:where(button, [role="tab"], a, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--zhichi-primary);
+  outline-offset: 2px;
+  border-radius: var(--zhichi-radius-sm);
+}
+
+/* 选区色用品牌蓝的浅底（默认浏览器蓝太跳） */
+::selection {
+  background: rgba(91, 141, 239, 0.22);
+  color: inherit;
+}
+
+/*
+ * 细滚动条。应用里滚动区很多（消息列表、设置、各面板），
+ * Windows 默认滚动条又粗又灰，在这套浅灰卡片里非常扎眼。
+ * 8px 宽、圆点满圆角、hover 才加深——平时"几乎不存在"，用时找得到。
+ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(122, 130, 148, 0.35) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(122, 130, 148, 0.28);
+  border-radius: var(--zhichi-radius-full);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(122, 130, 148, 0.5);
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/*
+ * 启动加载屏：文字轻微呼吸。
+ * 原来是纯文字"正在恢复聊天记录…"，转起来之后等待有了"活着"的感觉。
+ * （试过用 content 关键帧做"点点点"，content 属性不可插值，浏览器全部不支持，
+ *  已删；真要做跳动的点应该上三个 span 元素，等哪天想折腾再说。）
+ */
+.wechat-app--loading p {
+  animation: zhichi-loading-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes zhichi-loading-pulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+/*
+ * 尊重系统"减少动画"偏好。
+ * 本项目动效很多（打字机、错字纠正、立绘交叉淡入、气泡弹入…），
+ * 用户在系统里关掉动画时应当全部退化为直接呈现。
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
