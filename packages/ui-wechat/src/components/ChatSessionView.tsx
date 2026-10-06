@@ -473,16 +473,40 @@ const ChatSessionViewInner: FC<IChatSessionViewInternalProps> = ({
       aria-live="polite"
       aria-label={`与 ${characterDisplayName} 的聊天`}
     >
-      <header className="wechat-chat-session__header">
-        <span className="wechat-chat-session__name">{characterDisplayName}</span>
-        <span className="wechat-chat-session__presence" data-presence={presence}>
-          {presenceText}
-        </span>
-      </header>
+        <header className="wechat-chat-session__header">
+          <span className="wechat-chat-session__name">{characterDisplayName}</span>
+          <span className="wechat-chat-session__presence" data-presence={presence}>
+            {presenceText}
+          </span>
+        </header>
 
-      <div className="wechat-chat-session__list">
-        <MessageList
-          sessionKey={sessionId}
+        {/* 空会话兜底：没有开场白可展示时（角色没配开场白、或用户自己建的角色），
+            聊天区不能是一块白板——告诉用户可以干什么，顺带展示角色是谁。 */}
+        {visibleMessages.length === 0 && !typingActive ? (
+          <div className="wechat-chat-session__empty">
+            {characterAvatarUrl && (
+              <img
+                className="wechat-chat-session__empty-avatar"
+                src={characterAvatarUrl}
+                alt=""
+                width={56}
+                height={56}
+              />
+            )}
+            <span className="wechat-chat-session__empty-name">
+              {characterDisplayName}
+            </span>
+            <span className="wechat-chat-session__empty-hint">
+              发第一条消息，开始聊天吧
+            </span>
+            <span className="wechat-chat-session__empty-keys">
+              Enter 发送 · Shift+Enter 换行
+            </span>
+          </div>
+        ) : (
+        <div className="wechat-chat-session__list">
+          <MessageList
+            sessionKey={sessionId}
           messages={visibleMessages}
           characterAvatarUrl={characterAvatarUrl}
           characterProfile={characterProfile}
@@ -495,13 +519,14 @@ const ChatSessionViewInner: FC<IChatSessionViewInternalProps> = ({
           onJumpToQuote={handleJumpToQuote}
           onDeleteMessage={onDeleteMessage}
           onRecallMessage={onRecallMessage}
-          unreadMarkerMessageId={unreadMarkerMessageId}
-        />
-      </div>
-      {/*
-        固定立绘：屏幕级图层，整个会话视图只渲染一份。
-        情绪取"最后一条角色消息"的情绪，没有就中性。
-      */}
+            unreadMarkerMessageId={unreadMarkerMessageId}
+          />
+        </div>
+        )}
+        {/*
+          固定立绘：屏幕级图层，整个会话视图只渲染一份。
+          情绪取"最后一条角色消息"的情绪，没有就中性。
+        */}
       <PinnedSprite
         profile={characterProfile}
         emotion={

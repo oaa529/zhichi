@@ -1545,17 +1545,18 @@ body {
 }
 
 .zhichi-session-list__item {
-  display: flex;
-  gap: 12px;
-  width: 100%;
-  padding: 12px 16px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  text-align: left;
-  transition: background 0.15s;
-  position: relative;
-}
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    color: var(--zhichi-text);
+    transition: background 0.15s;
+    position: relative;
+  }
 
 .zhichi-session-list__item:hover,
 .zhichi-session-list__item-wrap:hover {
@@ -2218,6 +2219,61 @@ body {
   100% {
     background-color: transparent;
   }
+}
+
+/*
+ * 空会话兜底。
+ * 没有开场白可展示时（角色没配开场白、或用户自己建的角色），
+ * 聊天区不能是一块白板——居中给出"能干什么"的提示，顺带展示角色是谁。
+ */
+.wechat-chat-session__empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.wechat-chat-session__empty-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--zhichi-radius-md);
+  object-fit: cover;
+  margin-bottom: 12px;
+  box-shadow: var(--zhichi-shadow-sm);
+}
+
+.wechat-chat-session__empty-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--zhichi-text);
+}
+
+.wechat-chat-session__empty-hint {
+  font-size: 13px;
+  color: var(--zhichi-text-sub);
+  margin-top: 2px;
+}
+
+.wechat-chat-session__empty-keys {
+  margin-top: 14px;
+  padding: 4px 10px;
+  font-size: 11px;
+  color: var(--zhichi-text-mute);
+  background: var(--zhichi-bg-card);
+  border: 1px solid var(--zhichi-divider);
+  border-radius: var(--zhichi-radius-full);
+}
+
+/* 时间输入框（作息设置）在 Chromium 里有固有高度，不吃 padding，
+   不显式拉高会比其他输入框矮一截（25px vs 39px），同一屏里忽大忽小 */
+.zhichi-char-editor__input[type="time"],
+.zhichi-settings__input[type="time"] {
+  height: 39px;
+  padding: 9px 12px;
 }
 
 /* ---------- 设置面板分组 Tab ---------- */

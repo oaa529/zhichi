@@ -227,6 +227,7 @@ const SEED_PROFILES: ReadonlyArray<ICharacterProfile> = [
     id: "char-su-wanqing",
     displayName: "苏晚晴",
     bio: "温润如水的邻家姐姐",
+    greeting: "回来啦？外面冷不冷，要不要先喝口热的。",
     visualMetadata: {
       avatarUrl: buildPlaceholderAvatar("苏晚晴", 210),
       sprites: buildDemoSprites("苏晚晴", 210),
@@ -254,6 +255,7 @@ const SEED_PROFILES: ReadonlyArray<ICharacterProfile> = [
     id: "char-lin-xiaoxiao",
     displayName: "林笑笑",
     bio: "活泼爱闹的同桌",
+    greeting: "诶，你终于理我了！今天作业写得怎么样，要不要对答案？",
     visualMetadata: {
       avatarUrl: buildPlaceholderAvatar("林笑笑", 28),
       sprites: buildDemoSprites("林笑笑", 28),
