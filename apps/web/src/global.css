@@ -1820,8 +1820,15 @@ body {
 /* ---------- Settings ---------- */
 
 .zhichi-settings {
-  padding: 20px 16px;
-}
+    padding: 20px 16px;
+    /* 设置现在占满主区：自己负责纵向滚动，并给内容一个可读上限，
+       免得在超宽窗口上字段被拉成一整行那么长 */
+    flex: 1;
+    overflow-y: auto;
+    max-width: 820px;
+    width: 100%;
+    margin: 0 auto;
+    }
 
 .zhichi-settings__section {
   margin-bottom: 28px;
@@ -1862,11 +1869,14 @@ body {
 }
 
 .zhichi-settings__field-label {
-  flex-shrink: 0;
-  font-weight: 500;
-  color: var(--zhichi-text-sub);
-  min-width: 70px;
-}
+   /* 允许收缩：标签过长时换行给控件让位，而不是把控件挤成一条缝
+      （修之前：一句话背景的 textarea 只剩 28px 宽） */
+   flex-shrink: 1;
+   font-weight: 500;
+   color: var(--zhichi-text-sub);
+   min-width: 70px;
+   line-height: 1.5;
+   }
 
 .zhichi-settings__input,
 .zhichi-settings__select,
@@ -2294,12 +2304,14 @@ body {
 }
 
 .zhichi-settings__tab {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 8px 4px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 8px 4px;
+    /* 标签永远单行：宽度不够时宁可挤掉图标，也不允许竖排成"关于/你" */
+    white-space: nowrap;
   font-size: 12px;
   font-weight: 500;
   color: var(--zhichi-text-sub);
@@ -4694,11 +4706,12 @@ body {
  * :where() 让特异性为 0，不会盖掉各输入框自己的 focus 样式；
  * 只给"看不见焦点的控件"（按钮、导航、列表项）补上。
  */
-:where(button, [role="tab"], a, summary, [tabindex]):focus-visible {
-  outline: 2px solid var(--zhichi-primary);
-  outline-offset: 2px;
-  border-radius: var(--zhichi-radius-sm);
-}
+:where(button, [role="tab"], a, summary, [tabindex],
+    input[type="range"], input[type="checkbox"], input[type="radio"], input[type="file"]):focus-visible {
+    outline: 2px solid var(--zhichi-primary);
+    outline-offset: 2px;
+    border-radius: var(--zhichi-radius-sm);
+    }
 
 /* 选区色用品牌蓝的浅底（默认浏览器蓝太跳） */
 ::selection {

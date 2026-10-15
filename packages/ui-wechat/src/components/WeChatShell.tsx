@@ -98,6 +98,8 @@ export const WeChatShell: FC<IWeChatShellProps> = memo(
      */
     const presence = useChatStore((s) => s.presence);
     const presenceText = useChatStore((s) => s.presenceText);
+    /** 设置页占用整块主区（侧栏与分隔条收起）。 */
+    const showSettings = activeTab === "settings";
 
     const unreadTotal = Object.values(sessions).reduce(
       (sum, s) => sum + s.unreadCount,
@@ -167,6 +169,16 @@ export const WeChatShell: FC<IWeChatShellProps> = memo(
           unreadTotal={unreadTotal}
         />
 
+        {/*
+         * 设置要占满主区，不挤在侧边栏里。
+         *
+         * 之前设置面板被塞进 300px 的侧栏：五个 Tab 的字被压成竖排两行
+         * （"关于/你"、"备/份"），长标签字段的控件被挤到 25~41px 宽
+         * （"一句话背景"那个 textarea 只剩 28px，基本没法用）。
+         * 现在切到设置就隐藏侧栏 + 主区全宽显示，标签单行、控件有地方伸展。
+         */}
+        {!showSettings && (
+          <>
         {/* 中间：侧边栏内容 */}
         <aside className="zhichi-shell__sidebar" style={{ width: sidebarWidth }}>
           <header className="zhichi-shell__sidebar-header">
@@ -195,15 +207,6 @@ export const WeChatShell: FC<IWeChatShellProps> = memo(
                 onImportCharacterCard={onImportCharacterCard}
               />
             )}
-            {activeTab === "settings" && (
-              <SettingsPanel
-                onRecreateAdapter={onRecreateAdapter}
-                onTestConnection={onTestConnection}
-                onExportBackup={onExportBackup}
-                onImportBackup={onImportBackup}
-                autoBackup={autoBackup}
-              />
-            )}
           </div>
         </aside>
 
@@ -214,18 +217,22 @@ export const WeChatShell: FC<IWeChatShellProps> = memo(
           role="separator"
           aria-orientation="vertical"
         />
+          </>
+        )}
 
-        {/* 右侧：主聊天区（填满剩余空间） */}
+        {/* 右侧：主区（聊天填满剩余空间；设置时整块让给设置面板） */}
         <main className="zhichi-shell__main">
           <header className="zhichi-shell__main-header">
             <div className="zhichi-shell__main-heading">
               <span className="zhichi-shell__main-title">
-                {activeSessionId && sessions[activeSessionId]
-                  ? sessions[activeSessionId]!.displayName
-                  : title}
+                {showSettings
+                  ? "设置"
+                  : activeSessionId && sessions[activeSessionId]
+                    ? sessions[activeSessionId]!.displayName
+                    : title}
               </span>
               {/* 只有真的开着一个会话时才显示状态（否则"在线"没主语） */}
-              {activeSessionId && sessions[activeSessionId] && (
+              {!showSettings && activeSessionId && sessions[activeSessionId] && (
                 <span
                   className="zhichi-shell__main-presence"
                   data-presence={presence}
@@ -234,10 +241,22 @@ export const WeChatShell: FC<IWeChatShellProps> = memo(
                 </span>
               )}
             </div>
-            <ContextUsageBadge sessionId={activeSessionId ?? undefined} />
+            {!showSettings && (
+              <ContextUsageBadge sessionId={activeSessionId ?? undefined} />
+            )}
           </header>
           <div className="zhichi-shell__main-content">
-            {children}
+            {showSettings ? (
+              <SettingsPanel
+                onRecreateAdapter={onRecreateAdapter}
+                onTestConnection={onTestConnection}
+                onExportBackup={onExportBackup}
+                onImportBackup={onImportBackup}
+                autoBackup={autoBackup}
+              />
+            ) : (
+              children
+            )}
           </div>
         </main>
 
