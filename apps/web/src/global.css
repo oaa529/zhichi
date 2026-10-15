@@ -2578,11 +2578,66 @@ body {
 }
 
 .zhichi-input-bar__row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 60px;
-}
+   display: flex;
+   align-items: center;
+   gap: 10px;
+   min-height: 60px;
+   }
+
+   /* ---------- 输入框高度把手 ----------
+      输入框默认随内容自动增高（上限约 5 行），但"看得见自己写了多少"这件事
+      不能只靠自动增高：写长段落时把框拉高才舒服。这里的把手让用户能自己决定
+      高度，向上拖变高、向下拖压回自动增高；也可用方向键调（可聚焦）。
+   */
+
+   .zhichi-input-bar__resizer {
+   flex-shrink: 0;
+   height: 12px;
+   margin: 0 -14px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   cursor: row-resize;
+   touch-action: none;
+   /* 把手是纯装饰，焦点环画在内侧握把上（见 --resizer 内层伪元素） */
+   outline: none;
+   }
+
+   .zhichi-input-bar__resizer::after {
+   content: "";
+   width: 40px;
+   height: 4px;
+   border-radius: 999px;
+   background: var(--zhichi-border);
+   transition: background 0.15s, width 0.15s;
+   }
+
+   .zhichi-input-bar__resizer:hover::after {
+   background: var(--zhichi-text-sub);
+   width: 52px;
+   }
+
+   .zhichi-input-bar__resizer[data-resizing="true"]::after {
+   background: var(--zhichi-primary);
+   width: 52px;
+   }
+
+   .zhichi-input-bar__resizer:focus-visible::after {
+   background: var(--zhichi-primary);
+   outline: 2px solid var(--zhichi-primary);
+   outline-offset: 2px;
+   }
+
+   /* 拉高之后不再是胶囊：多行用胶囊圆角会显得怪 */
+   .zhichi-input-bar__textarea[data-tall="true"] {
+   border-radius: var(--zhichi-radius-md);
+   }
+
+   /* 用户用把手拉高时解除自动增高的 100px 上限（由把手的 maxHeight 接管）；
+      自动模式下仍保留 100px，避免长文本把消息区挤没。 */
+   .zhichi-input-bar__textarea[data-manual="true"] {
+   max-height: none;
+   }
 
 .zhichi-input-bar__quote {
   display: flex;
