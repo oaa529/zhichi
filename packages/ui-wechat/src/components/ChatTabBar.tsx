@@ -26,10 +26,9 @@ export const ChatTabBar: FC<IChatTabBarProps> = memo(
   ({ activeTab, onTabChange, unreadTotal = 0 }) => {
     return (
       <nav className="zhichi-tab-bar" role="tablist" aria-orientation="vertical">
-        {/* 顶部 Logo */}
-        <div className="zhichi-tab-bar__logo">
-          <span className="zhichi-tab-bar__logo-text">咫</span>
-        </div>
+        {/* 简约化：去掉顶部 Logo 方块——它不提供任何操作入口，
+            却占了 60px 垂直空间和一整块高饱和蓝（微信侧栏也没有）。
+            品牌名由标题栏的「咫尺」承担。 */}
 
         {/* Tab 按钮 */}
         {TABS.map((tab) => (

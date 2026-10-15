@@ -35,19 +35,26 @@
   --zhichi-text-sub: #7a8194;
   --zhichi-text-mute: #b3b9c6;
 
-  /* 边界/分隔（中性、细） */
-  --zhichi-divider: #e8eaef;
+/*
+   * 边界：只有一种线。简约化的核心之一——原来 --zhichi-divider(#e8eaef) 与
+   * --zhichi-border(#e0e3ea) 两个几乎一样的灰并存（35 + 25 处引用），
+   * 看上去"有的地方有线有的地方无线"，其实是同一条线。
+   * 现在 divider 指向 border，改一处即可全局对齐。
+   */
   --zhichi-border: #e0e3ea;
+  --zhichi-divider: var(--zhichi-border);
 
-  /* 阴影（中性、轻） */
-  --zhichi-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
+  /*
+   * 阴影：只留给"浮在内容之上"的东西（浮层、下拉、模态）。
+   * 贴在画布上的卡片/行/按钮/气泡一律不加阴影——浅灰底上几乎看不见，
+   * 只会让整屏发浑。简约化后 shadow-sm 整档退役。
+   */
   --zhichi-shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
   --zhichi-shadow-lg: 0 12px 32px rgba(16, 24, 40, 0.12);
 
-  /* 圆角 */
+  /* 圆角：只有三档（全圆角 / 卡片 / 控件），不再有第四档 */
   --zhichi-radius-sm: 6px;
   --zhichi-radius-md: 10px;
-  --zhichi-radius-lg: 16px;
   --zhichi-radius-full: 999px;
 }
 
@@ -124,9 +131,17 @@ body {
 }
 
 .zhichi-shell__sidebar-content {
-  flex: 1;
-  overflow-y: auto;
-}
+   flex: 1;
+   min-height: 0;
+   /* 侧栏内容竖排：搜索框固定、会话列表吃掉剩余高度。
+      简约化：以前列表 wrap 写的是 min-height:100%（向容器索要整屏高度），
+      可上方搜索框已经占了 45px —— 于是必然溢出 45px，
+      哪怕只有一个会话也常驻一条滚动条。改成 flex 分配剩余空间后，
+      内容装得下就没有滚动条，装不下才滚。 */
+   display: flex;
+   flex-direction: column;
+   overflow-y: auto;
+   }
 
 .zhichi-shell__main {
   flex: 1;
@@ -237,7 +252,7 @@ body {
 }
 
 .zhichi-error-boundary__btn--primary {
-  background: linear-gradient(135deg, var(--zhichi-primary), var(--zhichi-primary-dark));
+  background: var(--zhichi-primary);
   color: #fff;
 }
 
@@ -278,7 +293,7 @@ body {
 .zhichi-context-usage__btn {
   padding: 4px 9px;
   border: 1px solid var(--zhichi-divider);
-  border-radius: 999px;
+  border-radius: var(--zhichi-radius-full);
   background: var(--zhichi-bg-card);
   color: var(--zhichi-text-mute);
   font-size: 11px;
@@ -381,27 +396,7 @@ body {
     background: var(--zhichi-bg-card);
     border-right: 1px solid var(--zhichi-divider);
   }
-  
-  .zhichi-tab-bar__logo {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--zhichi-radius-md);
-    /* 简约风：纯主色，不再粉蓝渐变 */
-    background: var(--zhichi-primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 16px;
-    box-shadow: var(--zhichi-shadow-sm);
-  }
-  
-  .zhichi-tab-bar__logo-text {
-    font-size: 20px;
-    font-weight: 700;
-    color: #fff;
-  }
-  
-  .zhichi-tab-bar__item {
+.zhichi-tab-bar__item {
     width: 60px;
     height: 60px;
     display: flex;
@@ -501,8 +496,13 @@ body {
 }
 
 .zhichi-session-list__item-wrap .zhichi-session-list__item {
-  flex: 1;
-}
+   flex: 1;
+   /* min-width:0 不可省：flex 子项默认 min-width:auto，不允许收缩到
+      内容最小宽度以下。少了它，这一项（283px）加三点按钮（28px）= 311px
+      会超出侧栏（299px）——三点按钮被裁掉，还拖出一条横向滚动条。
+      加上之后文字省略号才真正生效（宽度不够时才有东西可省略）。 */
+   min-width: 0;
+   }
 
 .zhichi-session-list__more-btn {
   display: flex;
@@ -552,7 +552,7 @@ body {
 .zhichi-session-list__presence {
   margin-left: 6px;
   padding: 1px 6px;
-  border-radius: 999px;
+  border-radius: var(--zhichi-radius-full);
   background: var(--zhichi-bg-soft);
   color: var(--zhichi-text-mute);
   font-size: 10px;
@@ -1416,10 +1416,13 @@ body {
 /* ---------- 会话列表：多选管理 ---------- */
 
 .zhichi-session-list-wrap {
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
-}
+   display: flex;
+   flex-direction: column;
+   /* 不再 min-height:100%——见 .zhichi-shell__sidebar-content 的说明。
+      grow 填满剩余高度、不 shrink：内容比容器高时不压缩，由侧栏滚动。 */
+   flex: 1 0 auto;
+   min-height: 0;
+   }
 
 .zhichi-session-list-wrap > .zhichi-session-list {
   flex: 1;
@@ -1570,8 +1573,10 @@ body {
 
 .zhichi-session-list__item--active,
 .zhichi-session-list__item--active .zhichi-session-list__item {
-  background: rgba(91, 141, 239, 0.12);
-}
+   /* 简约化：选中态只留一根左指示条。原来"12% 蓝底 + 3px 蓝条"两重指示，
+      蓝底让整列泛蓝，和未选中行对比只剩"颜色深浅"这一个维度。 */
+   background: transparent;
+   }
 
 .zhichi-session-list__item--active::before {
   content: "";
@@ -1589,7 +1594,7 @@ body {
   height: 44px;
   border-radius: var(--zhichi-radius-md);
   flex-shrink: 0;
-  background: linear-gradient(135deg, var(--zhichi-primary-light), var(--zhichi-accent-light));
+  background: var(--zhichi-primary-light);
   position: relative;
   overflow: visible;
 }
@@ -1737,12 +1742,11 @@ body {
   width: 44px;
   height: 44px;
   border-radius: var(--zhichi-radius-md);
-  background: linear-gradient(135deg, var(--zhichi-primary), var(--zhichi-accent));
+  background: var(--zhichi-primary);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--zhichi-shadow-sm);
 }
 
 .zhichi-contacts__empty {
@@ -1773,7 +1777,7 @@ body {
   height: 44px;
   border-radius: var(--zhichi-radius-md);
   flex-shrink: 0;
-  background: linear-gradient(135deg, var(--zhichi-primary-light), var(--zhichi-accent-light));
+  background: var(--zhichi-primary-light);
   overflow: hidden;
 }
 
@@ -1835,7 +1839,6 @@ body {
   background: var(--zhichi-bg-card);
   border-radius: var(--zhichi-radius-md);
   padding: 16px;
-  box-shadow: var(--zhichi-shadow-sm);
 }
 
 .zhichi-settings__title {
@@ -1907,15 +1910,16 @@ body {
 }
 
 .zhichi-settings__help-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: var(--zhichi-primary);
-  text-decoration: none;
-  margin-bottom: 14px;
-  margin-left: 70px;
-}
+   display: inline-flex;
+   align-items: center;
+   gap: 4px;
+   font-size: 12px;
+   color: var(--zhichi-primary);
+   text-decoration: none;
+   margin-bottom: 14px;
+   /* 简约化：去掉原来硬写的 margin-left: 70px——那是给 300px 侧栏时代的
+      标签列宽留的偏移，设置面板占满主区后它已无意义，看着像随手缩进。 */
+   }
 
 .zhichi-settings__help-link:hover {
   text-decoration: underline;
@@ -1928,7 +1932,7 @@ body {
   gap: 6px;
   flex: 1;
   padding: 10px;
-  background: linear-gradient(135deg, var(--zhichi-primary), var(--zhichi-primary-dark));
+  background: var(--zhichi-primary);
   color: #fff;
   border: none;
   border-radius: var(--zhichi-radius-sm);
@@ -1936,7 +1940,6 @@ body {
   font-weight: 500;
   cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s;
-  box-shadow: var(--zhichi-shadow-sm);
 }
 
 .zhichi-settings__save-btn:hover {
@@ -2033,11 +2036,14 @@ body {
 }
 
 .zhichi-settings__hint {
-  font-size: 12px;
-  color: var(--zhichi-text-mute);
-  margin-top: 8px;
-  text-align: center;
-}
+   font-size: 12px;
+   color: var(--zhichi-text-mute);
+   margin-top: 8px;
+   /* 简约化：说明文字与其说明的字段左对齐。原来整段居中，夹在一堆左对齐
+      字段中间会显得没有归属（每一行的起点都不一样）。 */
+   text-align: left;
+   line-height: 1.7;
+   }
 
 /* ---------- 聊天记录搜索 ---------- */
 
@@ -2181,12 +2187,11 @@ body {
 .wechat-chat-session__back-to-latest-btn {
   padding: 5px 14px;
   border: 1px solid var(--zhichi-primary-light);
-  border-radius: 999px;
+  border-radius: var(--zhichi-radius-full);
   background: var(--zhichi-bg-card);
   color: var(--zhichi-primary);
   font-size: 12px;
   cursor: pointer;
-  box-shadow: var(--zhichi-shadow-sm);
   transition: transform 0.15s, background 0.15s;
 }
 
@@ -2206,7 +2211,7 @@ body {
 .wechat-chat-session__regenerate-btn {
   padding: 4px 12px;
   border: 1px solid var(--zhichi-divider);
-  border-radius: 999px;
+  border-radius: var(--zhichi-radius-full);
   background: rgba(255, 255, 255, 0.85);
   color: var(--zhichi-text-mute);
   font-size: 12px;
@@ -2258,7 +2263,6 @@ body {
   border-radius: var(--zhichi-radius-md);
   object-fit: cover;
   margin-bottom: 12px;
-  box-shadow: var(--zhichi-shadow-sm);
 }
 
 .wechat-chat-session__empty-name {
@@ -2317,7 +2321,7 @@ body {
   color: var(--zhichi-text-sub);
   background: transparent;
   border: none;
-  border-radius: calc(var(--zhichi-radius-sm) - 3px);
+  border-radius: var(--zhichi-radius-sm);
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -2607,7 +2611,7 @@ body {
    content: "";
    width: 40px;
    height: 4px;
-   border-radius: 999px;
+   border-radius: var(--zhichi-radius-full);
    background: var(--zhichi-border);
    transition: background 0.15s, width 0.15s;
    }
@@ -2761,9 +2765,8 @@ body {
   cursor: pointer;
   flex-shrink: 0;
   transition: all 0.15s;
-  background: linear-gradient(135deg, var(--zhichi-primary), var(--zhichi-primary-dark));
+  background: var(--zhichi-primary);
   color: #fff;
-  box-shadow: var(--zhichi-shadow-sm);
 }
 
 .zhichi-input-bar__send:hover {
@@ -2813,7 +2816,7 @@ body {
   max-width: 92vw;
   max-height: 80vh;
   background: var(--zhichi-bg-card);
-  border-radius: var(--zhichi-radius-lg);
+  border-radius: var(--zhichi-radius-md);
   box-shadow: var(--zhichi-shadow-lg);
   display: flex;
   flex-direction: column;
@@ -2896,7 +2899,7 @@ body {
 .zhichi-prompt-panel__preset {
   padding: 4px 10px;
   border: 1px dashed var(--zhichi-primary-light);
-  border-radius: 999px;
+  border-radius: var(--zhichi-radius-full);
   background: var(--zhichi-bg-soft);
   color: var(--zhichi-primary);
   font-size: 12px;
@@ -2917,7 +2920,7 @@ body {
   width: 100%;
   padding: 10px;
   margin-bottom: 16px;
-  background: linear-gradient(135deg, var(--zhichi-primary), var(--zhichi-accent));
+  background: var(--zhichi-primary);
   color: #fff;
   border: none;
   border-radius: var(--zhichi-radius-md);
@@ -2925,7 +2928,6 @@ body {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;
-  box-shadow: var(--zhichi-shadow-sm);
 }
 
 .zhichi-prompt-panel__create-btn:hover {
@@ -3062,7 +3064,6 @@ body {
   background: var(--zhichi-bg-card);
   color: var(--zhichi-primary);
   font-weight: 600;
-  box-shadow: var(--zhichi-shadow-sm);
 }
 
 .zhichi-prompt-editor__tab-icon {
@@ -3133,10 +3134,9 @@ body {
 }
 
 .zhichi-prompt-editor__btn--save {
-  background: linear-gradient(135deg, var(--zhichi-primary), var(--zhichi-primary-dark));
+  background: var(--zhichi-primary);
   color: #fff;
   border: none;
-  box-shadow: var(--zhichi-shadow-sm);
 }
 
 .zhichi-prompt-editor__btn--save:hover {
@@ -3201,7 +3201,7 @@ body {
   background: var(--zhichi-bg-card);
   width: 400px;
   max-width: 92vw;
-  border-radius: var(--zhichi-radius-lg);
+  border-radius: var(--zhichi-radius-md);
   box-shadow: var(--zhichi-shadow-lg);
 }
 
@@ -3239,10 +3239,9 @@ body {
 }
 
 .wechat-character-editor__save {
-  background: linear-gradient(135deg, var(--zhichi-primary), var(--zhichi-primary-dark)) !important;
+  background: var(--zhichi-primary) !important;
   color: #fff !important;
   border: none !important;
-  box-shadow: var(--zhichi-shadow-sm);
 }
 
 .wechat-character-editor__save:disabled {
@@ -3268,7 +3267,7 @@ body {
   height: 40px;
   border-radius: var(--zhichi-radius-md);
   flex-shrink: 0;
-  background: linear-gradient(135deg, var(--zhichi-primary-light), var(--zhichi-accent-light));
+  background: var(--zhichi-primary-light);
   overflow: hidden;
 }
 
@@ -3276,7 +3275,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #7c9eff, #5a7aeb);
+  background: var(--zhichi-primary);
   color: #fff;
   font-size: 14px;
   font-weight: 600;
@@ -3429,7 +3428,6 @@ body {
   background: var(--zhichi-bg-card);
   border: 1.5px solid var(--zhichi-primary-light);
   border-radius: var(--zhichi-radius-md);
-  box-shadow: var(--zhichi-shadow-sm);
 }
 
 .wechat-msg-edit__input {
@@ -3473,7 +3471,7 @@ body {
 }
 
 .wechat-msg-edit__btn--primary {
-  background: linear-gradient(135deg, var(--zhichi-primary), var(--zhichi-primary-dark));
+  background: var(--zhichi-primary);
   color: #fff;
 }
 
@@ -3503,7 +3501,7 @@ body {
   left: 50%;
   transform: translateX(-50%);
   padding: 2px 10px;
-  border-radius: 999px;
+  border-radius: var(--zhichi-radius-full);
   background: rgba(58, 58, 74, 0.78);
   color: #fff;
   font-size: 11px;
@@ -3522,7 +3520,6 @@ body {
 .wechat-msg-bubble--text,
 .wechat-msg-bubble--typing {
   background: var(--zhichi-bubble-other);
-  box-shadow: var(--zhichi-shadow-sm);
 }
 
 .wechat-msg[data-self="true"] .wechat-msg-bubble--text,
@@ -3691,7 +3688,7 @@ body {
   border-radius: var(--zhichi-radius-md);
   overflow: hidden;
   cursor: pointer;
-  background: linear-gradient(135deg, var(--zhichi-primary-light), var(--zhichi-accent-light));
+  background: var(--zhichi-primary-light);
   display: block;
 }
 
@@ -4089,7 +4086,7 @@ body {
   bottom: 8px;
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(135deg, var(--zhichi-primary), var(--zhichi-primary-dark));
+  background: var(--zhichi-primary);
   color: #fff;
   border: none;
   border-radius: var(--zhichi-radius-full);
@@ -4115,7 +4112,6 @@ body {
   background: var(--zhichi-bubble-other);
   border-radius: var(--zhichi-radius-md);
   padding: 10px 14px;
-  box-shadow: var(--zhichi-shadow-sm);
 }
 
 .wechat-typing-bubble .dot {
@@ -4373,7 +4369,7 @@ body {
 
 .zhichi-memory-list__kind {
   padding: 1px 7px;
-  border-radius: 999px;
+  border-radius: var(--zhichi-radius-full);
   background: var(--zhichi-primary-light);
   color: var(--zhichi-primary-dark);
   font-size: 11px;
@@ -4388,7 +4384,7 @@ body {
 /* 「手动」标记：这条记忆由用户自己维护，自动整理不会动它 */
 .zhichi-memory-list__origin {
   padding: 1px 7px;
-  border-radius: 999px;
+  border-radius: var(--zhichi-radius-full);
   border: 1px solid var(--zhichi-primary-light);
   color: var(--zhichi-primary-dark);
   font-size: 11px;
@@ -4457,7 +4453,7 @@ body {
 
 .zhichi-memory-list__keywords span {
   padding: 1px 7px;
-  border-radius: 999px;
+  border-radius: var(--zhichi-radius-full);
   background: var(--zhichi-bg-soft);
   color: var(--zhichi-text-mute);
   font-size: 11px;
@@ -4718,7 +4714,7 @@ body {
 
 .zhichi-plot-list__badge {
   padding: 1px 6px;
-  border-radius: 999px;
+  border-radius: var(--zhichi-radius-full);
   background: var(--zhichi-accent-light);
   color: #b06a7c;
 }

@@ -26,7 +26,6 @@ import {
 } from "@wechat-rp/core";
 import type { IConnectionTestResult } from "@wechat-rp/core";
 import { Icon } from "./Icon";
-import type { IconName } from "./Icon";
 import { PACING_PRESETS } from "../utils/pacingPresets";
 import { formatRelativeTime } from "../utils/relativeTime";
 
@@ -57,13 +56,12 @@ type SettingsTab = "model" | "realism" | "profile" | "memory" | "data";
 const SETTINGS_TABS: ReadonlyArray<{
   readonly id: SettingsTab;
   readonly label: string;
-  readonly icon: IconName;
 }> = [
-  { id: "model", label: "模型", icon: "sparkles" },
-  { id: "realism", label: "拟真", icon: "heart" },
-  { id: "profile", label: "关于你", icon: "contacts" },
-  { id: "memory", label: "记忆", icon: "memory" },
-  { id: "data", label: "备份", icon: "download" },
+  { id: "model", label: "模型" },
+  { id: "realism", label: "拟真" },
+  { id: "profile", label: "关于你" },
+  { id: "memory", label: "记忆" },
+  { id: "data", label: "备份" },
 ];
 
 /**
@@ -220,7 +218,8 @@ export const SettingsPanel: FC<ISettingsPanelProps> = memo(
               }`}
               onClick={() => setActiveTab(tab.id)}
             >
-              <Icon name={tab.icon} size={14} />
+              {/* 简约化：只留文字。五个 Tab 已是"图标 + 文字"两套符号，
+                  文字本身没有歧义，图标在这里只是噪声，还挤窄了文字。 */}
               {tab.label}
             </button>
           ))}
