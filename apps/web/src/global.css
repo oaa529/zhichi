@@ -246,7 +246,7 @@ body {
 }
 
 .zhichi-error-boundary__btn--primary {
-  background: var(--zhichi-primary);
+  background: var(--zhichi-green);
   color: #fff;
 }
 
@@ -512,7 +512,7 @@ body {
 }
 
 .zhichi-session-list__more-btn:hover {
-  background: rgba(91, 141, 239, 0.12);
+  background: rgba(87, 107, 149, 0.12);
   color: var(--zhichi-primary);
 }
 
@@ -589,12 +589,12 @@ body {
 }
 
 .zhichi-session-menu__item:hover:not(:disabled) {
-  background: rgba(91, 141, 239, 0.08);
+  background: rgba(87, 107, 149, 0.08);
   color: var(--zhichi-primary);
 }
 
 .zhichi-session-menu__item:disabled {
-  opacity: 0.4;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
@@ -610,8 +610,8 @@ body {
 /* ---------- 实时 AI 配置区 ---------- */
 
 .zhichi-realtime-ai {
-  background: background: var(--zhichi-primary-light);
-  border: 1px solid rgba(91, 141, 239, 0.2);
+  background: var(--zhichi-primary-light);
+  border: 1px solid rgba(87, 107, 149, 0.2);
   border-radius: var(--zhichi-radius-md);
   padding: 14px 16px;
   margin-bottom: 16px;
@@ -700,11 +700,11 @@ body {
 
 .zhichi-realtime-ai__interval-input:focus {
   border-color: var(--zhichi-primary);
-  box-shadow: 0 0 0 3px rgba(91, 141, 239, 0.15);
+  box-shadow: 0 0 0 3px rgba(87, 107, 149, 0.15);
 }
 
 .zhichi-realtime-ai__interval-input:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
@@ -732,8 +732,9 @@ body {
   width: min(560px, 92vw);
   max-height: 88vh;
   background: var(--zhichi-bg-card);
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(91, 141, 239, 0.1);
+/* 20px 是全站唯一的第四档圆角，收敛回 md */
+  border-radius: var(--zhichi-radius-md);
+  box-shadow: var(--zhichi-shadow-lg);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -754,8 +755,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 22px;
-  background: background: var(--zhichi-primary-light);
+padding: 18px 22px;
+  background: var(--zhichi-primary-light);
   border-bottom: 1px solid var(--zhichi-border);
 }
 
@@ -809,15 +810,16 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 14px 16px;
-  background: background: var(--zhichi-primary-light);
+padding: 14px 16px;
+  background: var(--zhichi-primary-light);
   border-radius: var(--zhichi-radius-md);
 }
 
 .zhichi-char-editor__avatar-preview {
   width: 72px;
   height: 72px;
-  border-radius: var(--zhichi-radius-full);
+/* 和会话列表/通讯录/聊天气泡旁保持同一种圆角形状 */
+  border-radius: var(--zhichi-radius-md);
   overflow: hidden;
   background: var(--zhichi-bg);
   border: 3px solid #fff;
@@ -876,7 +878,7 @@ body {
 
   .zhichi-char-editor__forge {
     background: var(--zhichi-primary-light);
-    border: 1px solid rgba(91, 141, 239, 0.25);
+    border: 1px solid rgba(87, 107, 149, 0.25);
   }
 
 .zhichi-char-editor__forge-hint {
@@ -899,7 +901,7 @@ body {
   padding: 8px 16px;
   border: none;
   border-radius: var(--zhichi-radius-md);
-  background: var(--zhichi-primary);
+  background: var(--zhichi-green);
   color: #fff;
   font-size: 13px;
   cursor: pointer;
@@ -912,7 +914,7 @@ body {
 }
 
 .zhichi-char-editor__forge-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
@@ -966,7 +968,7 @@ body {
 }
 
 .zhichi-char-editor__forge-versions button:disabled {
-  opacity: 0.4;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
@@ -1002,7 +1004,7 @@ body {
 .zhichi-char-editor__select:focus,
 .zhichi-char-editor__textarea:focus {
   border-color: var(--zhichi-primary);
-  box-shadow: 0 0 0 3px rgba(91, 141, 239, 0.15);
+  box-shadow: 0 0 0 3px rgba(87, 107, 149, 0.15);
 }
 
 .zhichi-char-editor__textarea {
@@ -1141,14 +1143,14 @@ body {
 }
 
 .zhichi-char-editor__archetype:hover {
-  background: rgba(91, 141, 239, 0.06);
+  background: rgba(87, 107, 149, 0.06);
   transform: translateY(-2px);
 }
 
 .zhichi-char-editor__archetype--active {
   border-color: var(--zhichi-primary);
-  background: rgba(91, 141, 239, 0.1);
-  box-shadow: 0 4px 12px rgba(91, 141, 239, 0.15);
+  background: rgba(87, 107, 149, 0.1);
+  box-shadow: 0 4px 12px rgba(87, 107, 149, 0.15);
 }
 
 .zhichi-char-editor__archetype-icon {
@@ -1345,7 +1347,7 @@ body {
 
 .zhichi-char-editor__length-btn--active {
   border-color: var(--zhichi-primary);
-  background: rgba(91, 141, 239, 0.08);
+  background: rgba(87, 107, 149, 0.08);
 }
 
 .zhichi-char-editor__length-label {
@@ -1370,19 +1372,19 @@ body {
 }
 
 .zhichi-char-editor__btn--save {
-  background: var(--zhichi-primary);
+  background: var(--zhichi-green);
   color: #fff;
-  box-shadow: 0 4px 12px rgba(91, 141, 239, 0.3);
+  box-shadow: 0 4px 12px rgba(7, 193, 96, 0.28);
 }
 
 .zhichi-char-editor__btn--save:hover {
-  background: #6a8aeb;
+  background: #06ad56;
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(91, 141, 239, 0.4);
+  box-shadow: 0 6px 16px rgba(7, 193, 96, 0.36);
 }
 
 .zhichi-char-editor__btn--save:disabled {
-  opacity: 0.4;
+  opacity: 0.45;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
@@ -1472,7 +1474,7 @@ body {
 }
 
 .zhichi-session-list__item--selected {
-  background: rgba(91, 141, 239, 0.1);
+  background: rgba(87, 107, 149, 0.1);
 }
 
 .zhichi-session-list__bulk-bar {
@@ -1508,7 +1510,7 @@ body {
 }
 
 .zhichi-session-list__bulk-action:disabled {
-  opacity: 0.4;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
@@ -1556,7 +1558,7 @@ body {
 
 .zhichi-session-list__item:hover,
 .zhichi-session-list__item-wrap:hover {
-  background: rgba(91, 141, 239, 0.06);
+  background: rgba(87, 107, 149, 0.06);
 }
 
 .zhichi-session-list__item--active,
@@ -1750,7 +1752,7 @@ body {
 }
 
 .zhichi-contacts__add-btn:hover {
-  background: rgba(91, 141, 239, 0.06);
+  background: rgba(87, 107, 149, 0.06);
 }
 
 /* 导入角色卡（次要入口，视觉上比"新建角色"轻一档） */
@@ -1820,7 +1822,7 @@ body {
 }
 
 .zhichi-contacts__item:hover {
-  background: rgba(91, 141, 239, 0.06);
+  background: rgba(87, 107, 149, 0.06);
 }
 
 .zhichi-contacts__avatar {
@@ -1953,7 +1955,7 @@ body {
 .zhichi-settings__select:focus,
 .zhichi-settings textarea:focus {
   border-color: var(--zhichi-primary);
-  box-shadow: 0 0 0 3px rgba(91, 141, 239, 0.15);
+  box-shadow: 0 0 0 3px rgba(87, 107, 149, 0.15);
 }
 
 .zhichi-settings__slider {
@@ -2026,7 +2028,7 @@ body {
 }
 
 .zhichi-settings__test-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
@@ -2212,7 +2214,7 @@ body {
   display: inline-block;
   margin-right: 4px;
   padding: 0 4px;
-  border-radius: 3px;
+  border-radius: var(--zhichi-radius-sm);
   background: var(--zhichi-primary-light);
   color: #fff;
   font-size: 10px;
@@ -2284,10 +2286,10 @@ body {
 
 @keyframes zhichi-msg-highlight {
   0% {
-    background-color: rgba(91, 141, 239, 0.28);
+    background-color: rgba(87, 107, 149, 0.28);
   }
   60% {
-    background-color: rgba(91, 141, 239, 0.16);
+    background-color: rgba(87, 107, 149, 0.16);
   }
   100% {
     background-color: transparent;
@@ -2421,7 +2423,7 @@ body {
 
 .zhichi-settings__backup-btn:disabled,
 .zhichi-settings__backup-btn--busy {
-  opacity: 0.55;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
@@ -2546,7 +2548,7 @@ body {
   color: var(--zhichi-primary);
   background: transparent;
   border: 1px solid var(--zhichi-divider);
-  border-radius: 6px;
+  border-radius: var(--zhichi-radius-sm);
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -2557,7 +2559,7 @@ body {
 }
 
 .zhichi-settings__auto-item-btn:disabled {
-  opacity: 0.55;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
@@ -3022,7 +3024,7 @@ body {
 }
 
 .zhichi-prompt-panel__item:hover {
-  background: rgba(91, 141, 239, 0.08);
+  background: rgba(87, 107, 149, 0.08);
 }
 
 .zhichi-prompt-panel__item-info {
@@ -3074,14 +3076,15 @@ body {
 }
 
 .zhichi-prompt-panel__item-btn--apply {
-  background: var(--zhichi-primary);
+  background: var(--zhichi-green);
   color: #fff;
-  border-color: var(--zhichi-primary);
+  border-color: var(--zhichi-green);
 }
 
 .zhichi-prompt-panel__item-btn--apply:hover {
-  background: var(--zhichi-primary-dark);
+  background: #06ad56;
   color: #fff;
+  border-color: #06ad56;
 }
 
 .zhichi-prompt-panel__item-btn--delete:hover {
@@ -3122,7 +3125,7 @@ body {
 }
 
 .zhichi-prompt-editor__tab:hover {
-  background: rgba(91, 141, 239, 0.08);
+  background: rgba(87, 107, 149, 0.08);
   color: var(--zhichi-primary);
 }
 
@@ -3173,7 +3176,7 @@ body {
 .zhichi-prompt-editor__input:focus,
 .zhichi-prompt-editor__textarea:focus {
   border-color: var(--zhichi-primary);
-  box-shadow: 0 0 0 3px rgba(91, 141, 239, 0.15);
+  box-shadow: 0 0 0 3px rgba(87, 107, 149, 0.15);
 }
 
 .zhichi-prompt-editor__footer {
@@ -3200,7 +3203,7 @@ body {
 }
 
 .zhichi-prompt-editor__btn--save {
-  background: var(--zhichi-primary);
+  background: var(--zhichi-green);
   color: #fff;
   border: none;
 }
@@ -3332,7 +3335,7 @@ body {
 .wechat-msg__avatar {
   width: 40px;
   height: 40px;
-  border-radius: var(--zhichi-radius-md);
+  border-radius: var(--zhichi-radius-sm);
   flex-shrink: 0;
   background: var(--zhichi-primary-light);
   overflow: hidden;
@@ -3485,7 +3488,7 @@ body {
 
 .wechat-msg__edit-btn:hover {
   color: var(--zhichi-primary);
-  background: rgba(91, 141, 239, 0.12);
+  background: rgba(87, 107, 149, 0.12);
 }
 
 .wechat-msg-edit {
@@ -3540,7 +3543,7 @@ body {
 }
 
 .wechat-msg-edit__btn--primary {
-  background: var(--zhichi-primary);
+  background: var(--zhichi-green);
   color: #fff;
 }
 
@@ -3550,7 +3553,7 @@ body {
 }
 
 .wechat-msg-edit__btn--primary:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
@@ -3755,7 +3758,8 @@ body {
   height: 100%;
   padding: 0;
   border: none;
-  border-radius: var(--zhichi-radius-md);
+/* 和会话列表/通讯录的头像统一成 6px 小圆角 */
+  border-radius: var(--zhichi-radius-sm);
   overflow: hidden;
   cursor: pointer;
   background: var(--zhichi-primary-light);
@@ -3966,7 +3970,7 @@ body {
 }
 
 .wechat-sprite-viewer__nav button:disabled {
-  opacity: 0.3;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
@@ -4292,8 +4296,8 @@ body {
 }
 
 .zhichi-memory-tab__digest-btn:disabled {
-  opacity: 0.55;
-  cursor: default;
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 /* 整理失败提示：说清卡在哪一步 */
@@ -4669,8 +4673,8 @@ body {
 }
 
 .zhichi-plot-tab__section-actions button:disabled {
-  opacity: 0.5;
-  cursor: default;
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 /* 本次更新：把"后台整理改了哪几项"一行一行摆出来 */
@@ -4849,7 +4853,7 @@ body {
 
 /* 选区色用品牌蓝的浅底（默认浏览器蓝太跳） */
 ::selection {
-  background: rgba(91, 141, 239, 0.22);
+  background: rgba(87, 107, 149, 0.22);
   color: inherit;
 }
 
