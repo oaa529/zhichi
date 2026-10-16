@@ -38,6 +38,10 @@ export const ChatTabBar: FC<IChatTabBarProps> = memo(
             className={`zhichi-tab-bar__item ${activeTab === tab.id ? "zhichi-tab-bar__item--active" : ""}`}
             role="tab"
             aria-selected={activeTab === tab.id}
+            /* 左栏只显示图标（微信那样），文字标签用 display:none 隐藏了，
+               所以可访问名必须显式给出来——否则读屏软件只能读到"按钮"。 */
+            aria-label={tab.label}
+            title={tab.label}
             onClick={() => onTabChange(tab.id)}
           >
             <span className="zhichi-tab-bar__icon">

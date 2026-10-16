@@ -282,7 +282,11 @@ export const InputBar: FC<IInputBarProps> = memo(
             </button>
           </div>
         )}
-        <div className="zhichi-input-bar__row">
+        {/*
+          * 微信式输入区：工具栏单独一行在上方，输入框在下方独占一行。
+          * 之前图标和输入框挤在同一行，输入框被压到只剩中间一小段。
+          */}
+        <div className="zhichi-input-bar__toolbar">
         <button
           type="button"
           className="zhichi-input-bar__icon-btn"
@@ -290,7 +294,7 @@ export const InputBar: FC<IInputBarProps> = memo(
           onClick={onOpenPrompts}
           title="提示词模板"
         >
-          <Icon name="prompt" size={22} />
+          <Icon name="prompt" size={20} />
         </button>
         {onAdvancePlot && (
           <button
@@ -301,7 +305,7 @@ export const InputBar: FC<IInputBarProps> = memo(
             disabled={disabled}
             title="推进剧情"
           >
-            <Icon name="plot" size={22} />
+            <Icon name="plot" size={20} />
           </button>
         )}
         {onSendSticker && (
@@ -314,9 +318,11 @@ export const InputBar: FC<IInputBarProps> = memo(
             onClick={() => setPickerOpen((open) => !open)}
             disabled={disabled}
           >
-            <Icon name="smile" size={22} />
+            <Icon name="smile" size={20} />
           </button>
         )}
+        </div>
+        <div className="zhichi-input-bar__row">
         <textarea
           ref={textareaRef}
           className="zhichi-input-bar__textarea"

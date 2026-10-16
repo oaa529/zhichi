@@ -181,11 +181,11 @@ export const WeChatShell: FC<IWeChatShellProps> = memo(
           <>
         {/* 中间：侧边栏内容 */}
         <aside className="zhichi-shell__sidebar" style={{ width: sidebarWidth }}>
-          <header className="zhichi-shell__sidebar-header">
-            <span className="zhichi-shell__sidebar-title">
-              {activeTab === "chats" ? "咫尺" : activeTab === "contacts" ? "通讯录" : "设置"}
-            </span>
-          </header>
+          {/*
+           * 微信这里没有标题栏：左栏图标已经说明了"你在哪个区"，
+           * 再来一条"咫尺/通讯录/设置"是重复信息，白占 56px。
+           * （设置模式下侧栏整个收起，标题由主区顶栏承担。）
+           */}
           <div className="zhichi-shell__sidebar-content">
             {activeTab === "chats" && (
               <>
