@@ -37,6 +37,18 @@ function msg(
   return { message, revealed: true, pending: false };
 }
 
+/** 取第 n 行；越界时给出可读报错，而不是让断言拿到 undefined。 */
+function rowAt(rows: ReadonlyArray<HTMLElement>, index: number): HTMLElement {
+  const row = rows[index];
+  if (!row) throw new Error(`没有第 ${index} 行（共 ${rows.length} 行）`);
+  return row;
+}
+
+/** 这行是不是"连续消息里的后续几条"（被归组、隐藏了头像）。 */
+function isGrouped(row: HTMLElement): boolean {
+  return row.classList.contains("wechat-msg-row--grouped");
+}
+
 function renderList(messages: ReadonlyArray<IMessageRuntime>) {
   const { container } = render(
     <MessageList
@@ -64,9 +76,9 @@ describe("MessageList · 连续消息隐藏重复头像", () => {
     ]);
 
     expect(rows).toHaveLength(3);
-    expect(rows[0].classList.contains("wechat-msg-row--grouped")).toBe(false);
-    expect(rows[1].classList.contains("wechat-msg-row--grouped")).toBe(true);
-    expect(rows[2].classList.contains("wechat-msg-row--grouped")).toBe(true);
+    expect(isGrouped(rowAt(rows, 0))).toBe(false);
+    expect(isGrouped(rowAt(rows, 1))).toBe(true);
+    expect(isGrouped(rowAt(rows, 2))).toBe(true);
   });
 
   it("说话人切换后重新算组首（自己的两条不该被并进对方那一组）", () => {
@@ -77,12 +89,7 @@ describe("MessageList · 连续消息隐藏重复头像", () => {
       msg("m-4", "user", "四", 30),
     ]);
 
-    expect(rows.map((r) => r.classList.contains("wechat-msg-row--grouped"))).toEqual([
-      false,
-      true,
-      false,
-      true,
-    ]);
+    expect(rows.map(isGrouped)).toEqual([false, true, false, true]);
   });
 
   it("间隔太久不算连续（超过 5 分钟就重新出现头像）", () => {
@@ -91,7 +98,7 @@ describe("MessageList · 连续消息隐藏重复头像", () => {
       msg("m-2", "char-1", "很久之后", 6 * 60),
     ]);
 
-    expect(rows[1].classList.contains("wechat-msg-row--grouped")).toBe(false);
+    expect(isGrouped(rowAt(rows, 1))).toBe(false);
   });
 
   it("插入时间分隔线后重新算组首", () => {
@@ -101,12 +108,15 @@ describe("MessageList · 连续消息隐藏重复头像", () => {
       msg("m-2", "char-1", "二", 10 * 60),
     ]);
 
-    expect(rows[1].classList.contains("wechat-msg-row--grouped")).toBe(false);
+    expect(isGrouped(rowAt(rows, 1))).toBe(false);
   });
 
-  it("mark 上的 grouped 类名挂在消息行上，CSS 据此隐藏头像", () => {
-    const rows = renderList([msg("m-1", "char-1", "一", 0), msg("m-2", "char-1", "二", 5)]);
-    expect(rows[1].dataset.messageId).toBe("m-2");
-    expect(rows[1].className).toContain("wechat-msg-row--grouped");
+  it("grouped 类名挂在消息行上，CSS 据此隐藏头像", () => {
+    const rows = renderList([
+      msg("m-1", "char-1", "一", 0),
+      msg("m-2", "char-1", "二", 5),
+    ]);
+    expect(rowAt(rows, 1).dataset.messageId).toBe("m-2");
+    expect(rowAt(rows, 1).className).toContain("wechat-msg-row--grouped");
   });
 });

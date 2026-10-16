@@ -1660,8 +1660,80 @@ body {
 /* ---------- Contacts ---------- */
 
 .zhichi-contacts {
-  padding: 4px 0;
-}
+   padding: 4px 0;
+   /* 右侧留出索引条的位置 */
+   position: relative;
+   }
+
+   /* ---------- 通讯录：拼音分组 + 右侧索引条（微信那样） ---------- */
+
+   /* 滚动由 .zhichi-shell__sidebar-content 负责；分组标题的 sticky 也相对它生效，
+     这里不要再加 overflow——加了也不会生效（父级不是定高的 flex 列），
+     反而会让人以为滚动条归它管。 */
+
+   .zhichi-contacts__group-title {
+   /* 微信的分组标题：灰底、压扁的一行小写字母 */
+   position: sticky;
+   top: 0;
+   z-index: 1;
+   padding: 3px 16px;
+   background: #e2e2e2;
+   color: #666;
+   font-size: 12px;
+   font-weight: 400;
+   line-height: 1.4;
+   }
+
+   .zhichi-contacts__index {
+   position: absolute;
+   top: 50%;
+   right: 2px;
+   transform: translateY(-50%);
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   gap: 1px;
+   z-index: 2;
+   /* 索引条会压在灰色分组标题上，给一层白底衬才看得清 */
+   padding: 4px 2px;
+   border-radius: var(--zhichi-radius-full);
+   background: rgba(255, 255, 255, 0.72);
+   }
+
+   .zhichi-contacts__index-item {
+   width: 16px;
+   padding: 0;
+   border: none;
+   background: none;
+   cursor: pointer;
+   color: var(--zhichi-text-mute);
+   font-size: 10px;
+   line-height: 1.25;
+   }
+
+   .zhichi-contacts__index-item:hover {
+   color: var(--zhichi-green);
+   }
+
+   /* 按住索引时中央浮出的字母（微信交互） */
+   .zhichi-contacts__index-sheet {
+   position: absolute;
+   top: 50%;
+   left: 50%;
+   transform: translate(-50%, -50%);
+   z-index: 3;
+   width: 56px;
+   height: 56px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   border-radius: var(--zhichi-radius-sm);
+   background: rgba(0, 0, 0, 0.55);
+   color: #fff;
+   font-size: 30px;
+   font-weight: 500;
+   pointer-events: none;
+   }
 
 .zhichi-contacts__add-btn {
   display: flex;
@@ -1752,11 +1824,12 @@ body {
 }
 
 .zhichi-contacts__avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--zhichi-radius-md);
-  flex-shrink: 0;
-  background: var(--zhichi-primary-light);
+   /* 微信通讯录头像：40px、小圆角，占位是中性灰而不是浅蓝 */
+   width: 40px;
+   height: 40px;
+   border-radius: var(--zhichi-radius-sm);
+   flex-shrink: 0;
+   background: #d4d4d4;
   overflow: hidden;
 }
 
@@ -3276,7 +3349,9 @@ body {
 }
 
 .wechat-msg__body {
-  max-width: 70%;
+   /* 微信的气泡大约占聊天区宽度的 60%：再宽的话一行能塞下太多字，
+      阅读时视线要从上一行末尾扫到下一行开头，很容易跳行。 */
+   max-width: 60%;
   position: relative;
 }
 

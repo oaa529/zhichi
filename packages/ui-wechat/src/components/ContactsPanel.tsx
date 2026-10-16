@@ -3,12 +3,15 @@
  * 通讯录面板。
  *
  * 显示所有联系人 + "+" 新建角色入口。
+ * 联系人按拼音首字母分组，右侧带索引条（微信通讯录那样）：
+ * 点索引上的字母跳到对应分组，长按/点击弹出字母表。
  */
 
-import { memo, useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useRef, useState } from "react";
 import type { FC } from "react";
 import { useSessionStore } from "../store/sessionStore";
 import type { IContact } from "@wechat-rp/shared-types";
+import { ALL_INITIALS, groupByInitial } from "../utils/pinyinInitial";
 
 export interface IContactsPanelProps {
   /** 点击联系人时触发（通常跳转到对应聊天）。 */
@@ -52,6 +55,32 @@ export const ContactsPanel: FC<IContactsPanelProps> = memo(
         return a.displayName.localeCompare(b.displayName, "zh-CN");
       });
     }, [contacts]);
+
+    /** 按拼音首字母分组；只有一組时不显示分组标题与索引条（微信也是）。 */
+    const groups = useMemo(
+      () => groupByInitial(sorted, (c) => c.displayName),
+      [sorted],
+    );
+
+    /** 滚动容器，用于索引跳转。 */
+    const listRef = useRef<HTMLDivElement>(null);
+    /** 展开中的字母表（点索引条时浮出来，微信的交互）。 */
+    const [indexSheet, setIndexSheet] = useState<string | null>(null);
+
+    const jumpTo = useCallback((initial: string) => {
+      const root = listRef.current;
+      if (!root) return;
+      const target = root.querySelector<HTMLElement>(
+        `[data-initial="${initial}"]`,
+      );
+      target?.scrollIntoView({ block: "start", behavior: "smooth" });
+    }, []);
+
+    /** 只在真正出现的分组上放索引点，没出现的字母点不动。 */
+    const presentInitials = useMemo(
+      () => new Set(groups.map((g) => g.initial)),
+      [groups],
+    );
 
     const handleContactClick = (contact: IContact) => {
       const sessionId = createSession(contact.characterId);
@@ -98,11 +127,22 @@ export const ContactsPanel: FC<IContactsPanelProps> = memo(
             {importState.message}
           </p>
         )}
-        <div className="zhichi-contacts__list" role="list">
+        <div className="zhichi-contacts__list" role="list" ref={listRef}>
           {sorted.length === 0 && (
             <p className="zhichi-contacts__empty">还没有联系人</p>
           )}
-          {sorted.map((contact) => (
+          {groups.map((group) => (
+            <section
+              key={group.initial}
+              className="zhichi-contacts__group"
+              aria-label={`以 ${group.initial} 开头`}
+            >
+              {groups.length > 1 && (
+                <h3 className="zhichi-contacts__group-title" data-initial={group.initial}>
+                  {group.initial}
+                </h3>
+              )}
+              {group.items.map((contact) => (
             <div
               key={contact.characterId}
               className="zhichi-contacts__row"
@@ -142,8 +182,42 @@ export const ContactsPanel: FC<IContactsPanelProps> = memo(
                 </button>
               )}
             </div>
+              ))}
+            </section>
           ))}
         </div>
+
+        {/* 右侧索引条：只有两个及以上分组才显示（微信通讯录的做法） */}
+        {groups.length > 1 && (
+          <>
+            <nav className="zhichi-contacts__index" aria-label="首字母索引">
+              {ALL_INITIALS.map((initial) =>
+                presentInitials.has(initial) ? (
+                  <button
+                    key={initial}
+                    type="button"
+                    className="zhichi-contacts__index-item"
+                    onClick={() => jumpTo(initial)}
+                    onPointerDown={() => setIndexSheet(initial)}
+                    onPointerUp={() => setIndexSheet(null)}
+                    onPointerLeave={() => setIndexSheet(null)}
+                  >
+                    {initial}
+                  </button>
+                ) : null,
+              )}
+            </nav>
+            {indexSheet && (
+              <div
+                className="zhichi-contacts__index-sheet"
+                role="status"
+                aria-live="polite"
+              >
+                {indexSheet}
+              </div>
+            )}
+          </>
+        )}
       </div>
     );
   },
