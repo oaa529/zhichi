@@ -20,6 +20,10 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
+    // 默认 Vitest 会把 CSS 导入置空字符串。开启后样式表才真正进 jsdom，
+    // 组件测试能拿到真实计算样式，globalCssContract 也能读到 global.css 原文
+    // （用它守住 flex 挤压、重复属性这类 jsdom 测不出的 CSS 缺陷）。
+    css: true,
     include: [
       "packages/**/src/__tests__/**/*.test.ts",
       "packages/**/src/__tests__/**/*.test.tsx",

@@ -116,6 +116,117 @@
 
 ---
 
+# 第一百二十轮：输入区被裁（布局真 bug）+ CSS 契约测试
+
+用户报"输入区有点问题"。真机一看，输入框下半截被窗口底边切掉，发送键只剩一半。
+
+## 一、根因：两个 flex 属性各差一步
+
+量 DOM 拿到现场（窗口 820px 高）：
+
+```
+.zhichi-input-bar   clientHeight 98   scrollHeight 112   ← 内容比盒子高 14px
+  ├ resizer        12
+  ├ toolbar        40
+  └ row            60   （textarea 被挤在里面）
+```
+
+两处配合出的事：
+
+| 位置 | 写法 | 后果 |
+| --- | --- | --- |
+| `.wechat-chat-session` | `height: 100%` | 消息区先按父高 764 报名，把输入栏挤到只剩 98 |
+| `.zhichi-input-bar` | 没写 `flex-shrink` | flex 子项默认 `flex-shrink: 1`，**照单全收**地被压扁 |
+
+而父级 `.zhichi-shell__main-content` 是 `overflow: hidden`——被压掉的 14px
+不是"藏起来"，是**根本没有对应的滚动条可回滚**。发送键因此只剩上半截。
+
+修法是让职责归位：消息区"占满剩余空间并允许收缩"，输入栏"永不收缩"。
+
+```css
+.wechat-chat-session { flex: 1; min-height: 0; }   /* 不再 height:100% */
+.zhichi-input-bar   { flex-shrink: 0; }
+```
+
+`min-height: 0` 那行别省：`flex: 1` 子项的 `min-height` 默认是 `auto`，
+不写就等于拒绝收缩，内部 `overflow-y: auto` 的滚动容器会跟着失效。
+
+## 二、`min-height: 60px` 本来就是错的
+
+顺手算了一下输入栏内容的地板高度：
+
+```
+把手 12 + 工具栏 40（padding-top 8 + 图标 32）+ 输入行 60 = 112px
+```
+
+而 `min-height` 写的是 **60px**——比自己的内容地板还矮 52px。这条声明
+一直在跟内容打架：它既没起到"最小高度"的作用（内容永远比它高），
+又在 `flex-shrink` 生效时给出错误的安全感。改成真实的 `112px`。
+
+## 三、连带修：空状态在矮窗口里被裁且滚不回来
+
+把窗口压到 283px 测边界时，又撞见同一类问题：`.wechat-chat-session__empty`
+用 `justify-content: center`，而它 225px、容器只剩 115px。经典的**居中溢出**：
+内容被顶出容器上沿，再被上层 `overflow: hidden` 裁掉——因为整体居中，
+`scrollTop` 也无从下手，用户永远看不到被裁的那半截。
+
+```css
+justify-content: safe center;   /* 装不下就退回上对齐 */
+overflow-y: auto;               /* 剩下的靠滚动 */
+```
+
+两条一起上：`safe center` 解决顶部，`overflow-y` 保证剩下的内容够得着。
+
+## 四、这轮真正有价值的东西：CSS 契约测试
+
+上面三个 bug 有个共同点——**jsdom 测不出来**：
+
+- jsdom 没有排版引擎，`offsetHeight` 恒为 0，flex 挤压无从复现
+- `background: background: x` 这种笔误，浏览器静默丢弃前一条，
+  `vite build` 和 `eslint` 都看不见（上一轮就抓到过三个）
+
+于是加了一条直接读样式表文本的契约测试
+（`apps/web/src/__tests__/globalCssContract.test.ts`，7 条），
+把"踩过坑的地方"钉死：
+
+- 输入栏必须有 `flex-shrink: 0`
+- 消息区不得出现 `height: 100%`，且要有 `flex: 1` + `min-height: 0`
+- 输入栏 `min-height` 必须 ≥ 各段内容地板之和（把 12/40/60 算出来比对）
+- 空状态必须 `safe center` + `overflow-y: auto`
+- 全文不得有同属性写两遍
+- 圆角不得写字面值
+- 不得残留旧品牌蓝
+
+### 两个实现上的坑
+
+1. **Vitest 默认把 CSS 导入置空**（`RAW_LEN=0`），连 `?raw` 也不例外。
+   要读到原文得开 `test.css: true`。
+2. 开 `css: true` 后别用 `node:fs` 读文件——这个仓库是浏览器向的，
+   没装 `@types/node`，`tsc` 会报 `Cannot find module 'node:fs'`。
+   改用 Vite 原生的 `import css from "../global.css?raw"`（类型由现成的
+   `vite-env.d.ts` 提供）。
+
+验证过这条测试**确实拦得住回归**：把 `flex-shrink: 0` 删掉，对应那条立刻红。
+
+## 五、验证
+
+```
+983 测试 / typecheck / lint / build 全绿（976 → 983，新增 7 条契约测试）
+真机多尺寸实测（window.innerHeight）：
+  996px → 输入栏 113，裁切 0，发送键底 984 < 996
+  820px → 输入栏 113，裁切 0，发送键底 808 < 820
+  420px → 输入栏 113，裁切 0，消息区让位到 215
+  320px → 输入栏 113，裁切 0，消息区剩 115，空状态变为可滚动
+  空状态 283px 时 scrollable=true，头像完整可见（avatarTop 88 ≥ 容器顶 56）
+把手拉高到 55% 上限（textarea 451 / 输入栏 504）：消息区让位到 260，裁切 0
+```
+
+> 工具教训：用 `Set-Content -Encoding UTF8` 改文件会**给 global.css 加上 BOM**
+> （首字节变成 `239,187,191`）。已用 `UTF8Encoding($false)` 剥掉，
+> 恢复后首字节为 `47`（`/`）。以后改这个文件统一走 .NET API，别用 `Set-Content`。
+
+---
+
 # 第一百一十九轮：一致性审计 + 角色编辑器
 
 这轮不追新功能，先**审计一致性**——前几轮每轮都发现"同一个视觉意图有多种写法"，

@@ -2306,10 +2306,14 @@ padding: 14px 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  /* safe center：内容比容器高时退回上对齐。普通 center 会把头像顶出容器上沿，
+     再被上层的 overflow:hidden 裁掉——而且滚不回来（居中溢出的经典坑）。
+     窗口压矮时（实测 283px）空状态 225px 装不下，必须能往下滚。 */
+  justify-content: safe center;
   gap: 4px;
   padding: 32px 24px;
   text-align: center;
+  overflow-y: auto;
 }
 
 .wechat-chat-session__empty-avatar {
@@ -2587,7 +2591,13 @@ padding: 14px 16px;
    display: flex;
    flex-direction: column;
    align-items: stretch;
-   min-height: 60px;
+   /* 关键：输入栏是聊天窗口的固定底座，绝不能被上方消息区压缩。
+      之前漏了这条，消息区内容一高就把输入栏挤扁——而 .zhichi-shell__main-content
+      是 overflow:hidden，被挤掉的 14px 直接被裁掉且滚不回来（发送键只剩半个）。 */
+   flex-shrink: 0;
+   /* 112 = 把手 12 + 工具栏 40（padding-top 8 + 图标 32）+ 输入行 60。
+      写 60 是错的（比内容地板还矮），会让这条与内容互相打架。 */
+   min-height: 112px;
    padding: 0 14px;
    /* 微信：输入区和聊天区同底色，只靠一条细线分隔；
       之前是半透明白 + 模糊玻璃，和微信的平涂观感不同。 */
@@ -2597,8 +2607,8 @@ padding: 14px 16px;
    position: relative;
    }
 
-   /* 工具栏单独一行（微信：表情/文件/截图/语音在输入框上方） */
-   .zhichi-input-bar__toolbar {
+/* 工具栏单独一行（微信：表情/文件/截图/语音在输入框上方） */
+.zhichi-input-bar__toolbar {
    display: flex;
    align-items: center;
    gap: 4px;
@@ -4004,11 +4014,14 @@ padding: 14px 16px;
 /* ---------- 聊天列表容器 ---------- */
 
 .wechat-chat-session {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
+   /* 不要用 height:100% —— 那会让消息区抢满父高，把输入栏挤扁；
+      改成"占满剩余空间 + 允许内部收缩"，输入栏高度才有保证。 */
+   flex: 1;
+   min-height: 0;
+   display: flex;
+   flex-direction: column;
+   position: relative;
+   }
 
 /* 错误重试气泡：悬浮在列表下方、输入栏上方 */
 .wechat-chat-session__error {
