@@ -27,6 +27,14 @@ import type { IMessageBubbleProps } from "./MessageBubble";
 import { TypingIndicatorBubble } from "./TypingIndicatorBubble";
 import { findLastEditableUserMessage } from "../utils/regenerate";
 
+/**
+ * 同一人连续消息的归组窗口（5 分钟）。
+ *
+ * 微信只在"紧接着的下一条"上省掉重复头像——隔太久（比如中间显示了时间分隔线）
+ * 就会重新出现头像，否则长时间聊天里一大片空白头像会更怪。
+ */
+const GROUP_WINDOW_MS = 5 * 60 * 1000;
+
 export interface IMessageListProps {
   /** 会话标识。变化时重建列表 DOM（切换会话）。 */
   readonly sessionKey?: string;
@@ -152,6 +160,17 @@ const MessageListInner: FC<IMessageListProps> = ({
             prev ? prev.message.timestamp : null,
             runtime.message.timestamp,
           );
+          /*
+           * 微信：同一个人的连续消息只在第一条显示头像，
+           * 后面的头像位留空（气泡保持对齐，不会左移），间距也更紧。
+           * 跨时间分隔线、或中间插了「以下为新消息」时就不再算连续。
+           */
+          const isGrouped =
+            !!prev &&
+            !showDivider &&
+            unreadMarkerMessageId !== runtime.message.id &&
+            prev.message.senderId === runtime.message.senderId &&
+            runtime.message.timestamp - prev.message.timestamp <= GROUP_WINDOW_MS;
           return (
             <Fragment key={runtime.message.id}>
               {showDivider && (
@@ -167,6 +186,8 @@ const MessageListInner: FC<IMessageListProps> = ({
               )}
               <div
                 className={`wechat-msg-row${
+                  isGrouped ? " wechat-msg-row--grouped" : ""
+                }${
                   highlightMessageId === runtime.message.id
                     ? " wechat-msg-row--highlight"
                     : ""

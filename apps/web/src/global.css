@@ -1540,8 +1540,9 @@ body {
 }
 
 .zhichi-session-list__item {
-    display: flex;
-    gap: 12px;
+   display: flex;
+   /* 微信会话项：40px 头像 + 10px 间距 + 上下 12px 内边距 ≈ 64px 行高 */
+   gap: 10px;
     width: 100%;
     padding: 12px 16px;
     background: none;
@@ -1567,9 +1568,10 @@ body {
 /* 微信的选中会话只有灰底，没有左侧指示条——这里整条规则移除 */
 
 .zhichi-session-list__avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--zhichi-radius-md);
+   /* 微信头像是接近正方的小圆角，不是大圆角卡片 */
+   width: 40px;
+   height: 40px;
+   border-radius: var(--zhichi-radius-sm);
   flex-shrink: 0;
   background: var(--zhichi-primary-light);
   position: relative;
@@ -1577,9 +1579,9 @@ body {
 }
 
 .zhichi-session-list__avatar img {
-  width: 100%;
-  height: 100%;
-  border-radius: var(--zhichi-radius-md);
+   width: 100%;
+   height: 100%;
+   border-radius: var(--zhichi-radius-sm);
   object-fit: cover;
 }
 
@@ -1637,13 +1639,13 @@ body {
 }
 
 .zhichi-session-list__time {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--zhichi-text-mute);
   flex-shrink: 0;
 }
 
 .zhichi-session-list__preview {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--zhichi-text-sub);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2186,12 +2188,13 @@ body {
 }
 
 .wechat-chat-session__regenerate-btn {
-  padding: 4px 12px;
-  border: 1px solid var(--zhichi-divider);
-  border-radius: var(--zhichi-radius-full);
-  background: rgba(255, 255, 255, 0.85);
-  color: var(--zhichi-text-mute);
-  font-size: 12px;
+   padding: 4px 12px;
+   /* 微信没有描边药丸这一套：次要操作是浅灰底 + 小字，按下去才有反馈 */
+   border: none;
+   border-radius: var(--zhichi-radius-sm);
+   background: rgba(0, 0, 0, 0.04);
+   color: var(--zhichi-text-mute);
+   font-size: 12px;
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s, transform 0.15s;
 }
@@ -3243,9 +3246,10 @@ body {
 /* ---------- 消息气泡 ---------- */
 
 .wechat-msg {
-  display: flex;
-  margin-bottom: 16px;
-  gap: 8px;
+   display: flex;
+   margin-bottom: 16px;
+   /* 微信：头像与气泡之间约 10px */
+   gap: 10px;
 }
 
 .wechat-msg[data-self="true"] {
@@ -3963,9 +3967,22 @@ body {
  * contain-intrinsic-size 提供高度估算基准，浏览器渲染过后会自动记住真实高度。
  */
 .wechat-msg-row {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 80px;
-}
+   content-visibility: auto;
+   contain-intrinsic-size: auto 80px;
+   }
+
+   /* 微信：同一人连续消息只在第一条显示头像，后面的头像位留空（气泡不左移），
+      且间距更紧——一大片重复头像会让长对话显得很吵。
+      注意两侧的头像组件不同：对方是 .wechat-avatar（AvatarWithSprite），
+      自己才是 .wechat-msg__avatar--self，两个都要盖到。 */
+   .wechat-msg-row--grouped .wechat-msg__avatar--self,
+   .wechat-msg-row--grouped .wechat-avatar {
+   visibility: hidden;
+   }
+
+   .wechat-msg-row--grouped .wechat-msg {
+   margin-bottom: 8px;
+   }
 
 /* ---------- 时间分隔线（微信风格） ---------- */
 
