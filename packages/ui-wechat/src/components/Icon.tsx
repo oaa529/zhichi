@@ -34,6 +34,7 @@ import {
   Sun,
   Upload,
   Users,
+  Volume2,
   X,
   Check,
 } from "lucide-react";
@@ -59,7 +60,8 @@ export type IconName =
   | "plot"
   | "download"
   | "upload"
-  | "smile";
+  | "smile"
+  | "voice";
 
 export interface IIconProps {
   readonly name: IconName;
@@ -92,6 +94,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   download: Download,
   upload: Upload,
   smile: Smile,
+  voice: Volume2,
 };
 
 export const Icon: FC<IIconProps> = memo(

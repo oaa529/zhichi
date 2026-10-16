@@ -368,3 +368,136 @@ describe("MessageBubble · 复制", () => {
     expect(screen.getByRole("status").textContent).toBe("已复制");
   });
 });
+
+describe("MessageBubble · 系统消息与撤回提示", () => {
+  /** 系统消息 / 撤回提示都不是"某个人说的话"，不该带头像。 */
+  function hasAvatar(container: HTMLElement): boolean {
+    return (
+      container.querySelector(".wechat-msg__avatar") !== null ||
+      container.querySelector(".wechat-avatar") !== null
+    );
+  }
+
+  it("系统消息（时间分割线）不渲染头像", () => {
+    const { container } = render(
+      <MessageBubble
+        runtime={{
+          message: {
+            id: "sys1",
+            type: "system",
+            systemKind: "time-divider",
+            displayText: "18:52",
+            senderId: "system",
+            recipientId: "system",
+            sessionId: "s1",
+            timestamp: 1000,
+            chunkSequence: 0,
+            emotion: "neutral",
+          },
+          revealed: true,
+          pending: false,
+        }}
+        avatarUrl=""
+      />,
+    );
+
+    expect(hasAvatar(container)).toBe(false);
+    expect(screen.getByText("18:52")).toBeTruthy();
+  });
+
+  it("撤回提示不渲染头像（哪怕是本人撤回的）", () => {
+    const { container } = render(
+      <MessageBubble
+        runtime={{
+          message: {
+            id: "rec1",
+            type: "recall",
+            targetMessageId: "m0",
+            notice: "你撤回了一条消息",
+            senderId: "user",
+            recipientId: "char-1",
+            sessionId: "s1",
+            timestamp: 1000,
+            chunkSequence: 0,
+            emotion: "neutral",
+          },
+          revealed: true,
+          pending: false,
+        }}
+        avatarUrl=""
+        isSelf
+      />,
+    );
+
+    expect(hasAvatar(container)).toBe(false);
+    expect(screen.getByText("你撤回了一条消息")).toBeTruthy();
+  });
+
+  it("普通消息仍然带头像（别把上面两条改过头）", () => {
+    const { container } = render(
+      <MessageBubble runtime={makeRuntime()} avatarUrl="" />,
+    );
+
+    expect(hasAvatar(container)).toBe(true);
+  });
+});
+
+describe("MessageBubble · 语音气泡", () => {
+  function voiceRuntime(durationSec: number): IMessageRuntime {
+    return {
+      message: {
+        id: `v${durationSec}`,
+        type: "voice",
+        url: "",
+        durationSec,
+        senderId: "char-1",
+        recipientId: "user",
+        sessionId: "s1",
+        timestamp: 1000,
+        chunkSequence: 0,
+        emotion: "neutral",
+      },
+      revealed: true,
+      pending: false,
+    };
+  }
+
+  function widthOf(container: HTMLElement): number {
+    const el = container.querySelector<HTMLElement>(".wechat-msg-bubble--voice");
+    if (!el) throw new Error("找不到语音气泡");
+    return Number.parseInt(el.style.width, 10);
+  }
+
+  it("宽度随时长递增（扫一眼就知道这条多长）", () => {
+    const short = render(<MessageBubble runtime={voiceRuntime(1)} avatarUrl="" />);
+    const shortW = widthOf(short.container);
+    short.unmount();
+
+    const mid = render(<MessageBubble runtime={voiceRuntime(15)} avatarUrl="" />);
+    const midW = widthOf(mid.container);
+    mid.unmount();
+
+    const long = render(<MessageBubble runtime={voiceRuntime(60)} avatarUrl="" />);
+    const longW = widthOf(long.container);
+
+    expect(shortW).toBeGreaterThan(0);
+    expect(midW).toBeGreaterThan(shortW);
+    expect(longW).toBeGreaterThan(midW);
+  });
+
+  it("60 秒以上封顶，不会无限变宽", () => {
+    const sixty = render(<MessageBubble runtime={voiceRuntime(60)} avatarUrl="" />);
+    const w60 = widthOf(sixty.container);
+    sixty.unmount();
+
+    const huge = render(<MessageBubble runtime={voiceRuntime(600)} avatarUrl="" />);
+    expect(widthOf(huge.container)).toBe(w60);
+  });
+
+  it("0 秒或负数按 1 秒算，不让气泡塌掉", () => {
+    const { container } = render(
+      <MessageBubble runtime={voiceRuntime(0)} avatarUrl="" />,
+    );
+    expect(widthOf(container)).toBeGreaterThan(0);
+  });
+});

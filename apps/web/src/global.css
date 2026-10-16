@@ -3371,26 +3371,33 @@ padding: 14px 16px;
 /* ---------- 引用回复 ---------- */
 
 .wechat-msg__quote {
+  /* 微信的引用预览是**单行**：名字和正文内联、超长省略。
+     之前用 column 堆成两行，短引用也要 58px 高，看着像凭空多了一条消息。 */
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: baseline;
+  gap: 5px;
   max-width: 100%;
   margin-bottom: 4px;
-  padding: 6px 10px;
+  padding: 5px 10px;
   border-left: 3px solid var(--zhichi-primary-light);
   border-radius: var(--zhichi-radius-sm);
-  background: rgba(16, 24, 40, 0.07);
+  background: var(--zhichi-bg-soft);
   font-size: 12px;
   line-height: 1.4;
   overflow: hidden;
 }
 
 .wechat-msg__quote-name {
-  color: var(--zhichi-text-sub);
+  /* 名字不许被挤掉，被省略的应该是正文 */
+  flex-shrink: 0;
+  color: var(--zhichi-text);
   font-weight: 500;
 }
 
 .wechat-msg__quote-text {
+  /* min-width:0 是关键：flex 子项默认不缩到内容宽度以下，
+     不写就永远不会触发 ellipsis，长引用会顶宽整个气泡。 */
+  min-width: 0;
   color: var(--zhichi-text-sub);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -3408,7 +3415,7 @@ padding: 14px 16px;
 }
 
 .wechat-msg__quote--clickable:hover {
-  background: rgba(16, 24, 40, 0.15);
+  background: var(--zhichi-border);
 }
 
 /* ---------- 消息操作菜单（长按 / 右键） ---------- */
@@ -3600,12 +3607,15 @@ padding: 14px 16px;
   100% { opacity: 0; }
 }
 
+/* 文字、语音、正在输入有气泡底；图片和贴图没有（内容本身就是气泡） */
 .wechat-msg-bubble--text,
+.wechat-msg-bubble--voice,
 .wechat-msg-bubble--typing {
   background: var(--zhichi-bubble-other);
 }
 
 .wechat-msg[data-self="true"] .wechat-msg-bubble--text,
+.wechat-msg[data-self="true"] .wechat-msg-bubble--voice,
 .wechat-msg[data-self="true"] .wechat-msg-bubble--typing {
   background: var(--zhichi-bubble-self);
 }
@@ -3623,6 +3633,32 @@ padding: 14px 16px;
   box-shadow: none;
 }
 
+/*
+ * 语音气泡：宽度由组件按时长算好写进 inline style（见 MessageBubble 的
+ * voiceBubbleWidth），这里只管内部排版。
+ * 此前这一段没有任何规则，图标和时长是靠行内默认布局凑出来的。
+ */
+.wechat-msg-bubble--voice {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  /* 宽度写死在 inline style，这里必须允许它生效 */
+  max-width: none;
+}
+
+.wechat-msg-bubble__voice-icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--zhichi-text-sub);
+}
+
+.wechat-msg-bubble__voice-duration {
+  font-size: 13px;
+  color: var(--zhichi-text-sub);
+  white-space: nowrap;
+}
+
 .wechat-msg-bubble__sticker {
   width: 96px;
   height: 96px;
@@ -3635,6 +3671,26 @@ padding: 14px 16px;
   text-align: center;
   color: var(--zhichi-text-sub);
   font-size: 12px;
+}
+
+/*
+ * 系统消息（时间分割线、"已就寝"）与撤回提示是**居中灰字**，不是某个人的发言。
+ * 组件已经不给它们渲染头像了，但行本身仍是普通消息的左右对齐布局，
+ * 于是文字被顶到一侧。整行改成纵向居中。
+ */
+.wechat-msg[data-msg-type="system"],
+.wechat-msg[data-msg-type="recall"] {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.wechat-msg[data-msg-type="system"] .wechat-msg__body,
+.wechat-msg[data-msg-type="recall"] .wechat-msg__body {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  flex: none;
 }
 
 .wechat-msg-bubble__corrected-mark {

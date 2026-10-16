@@ -38,6 +38,11 @@ import { buildPlaceholderSticker } from "../utils/placeholderSticker";
 import { useSessionStore } from "../store/sessionStore";
 import { AvatarWithSprite } from "./AvatarWithSprite";
 import { MessageStatusIndicator, type MessageStatus } from "./MessageStatus";
+import { Icon } from "./Icon";
+
+/** 语音气泡宽度区间：1 秒约 84px，60 秒封顶 220px。 */
+const VOICE_MIN_WIDTH = 82;
+const VOICE_MAX_WIDTH = 220;
 
 export interface IMessageBubbleProps {
   readonly runtime: IMessageRuntime;
@@ -101,6 +106,13 @@ export const MessageBubble: FC<IMessageBubbleProps> = memo(
   }) => {
     const message = runtime.message;
     const characterName = characterProfile?.displayName;
+    /**
+     * 系统消息（时间分割线、"已就寝"等）和撤回提示都不是"某个人说的话"，
+     * 微信里它们是居中灰字、没有头像。之前它们照样走普通消息的渲染分支，
+     * 于是凭空多出一个头像，还被 row / row-reverse 推到左右两边。
+     */
+    const isCenteredNotice =
+      MessageGuard.isSystem(message) || MessageGuard.isRecall(message);
     /**
      * 操作菜单（复制 / 引用）。
      *
@@ -230,7 +242,7 @@ export const MessageBubble: FC<IMessageBubbleProps> = memo(
           : { duration: 0.32, ease: [0.22, 1, 0.36, 1] }
         }
       >
-        {characterProfile && !isSelf ? (
+        {isCenteredNotice ? null : characterProfile && !isSelf ? (
           <AvatarWithSprite
             profile={characterProfile}
             currentEmotion={currentEmotion}
@@ -531,9 +543,26 @@ const ImageBubbleBody: FC<{ message: IImageMessage }> = ({ message }) => (
   </div>
 );
 
+/**
+ * 语音气泡宽度随时长成比例（微信的经典做法）。
+ *
+ * 不做的话所有语音气泡都是同一个宽度，"扫一眼就知道这条有多长"这个信息
+ * 只能靠读数字——那不如直接写在气泡上了。
+ */
+function voiceBubbleWidth(durationSec: number): number {
+  // 夹到 1~60 秒再换算：0 秒或异常值不该让气泡消失/爆宽
+  const sec = Math.min(Math.max(Math.round(durationSec), 1), 60);
+  return Math.round(Math.min(VOICE_MIN_WIDTH + sec * 2, VOICE_MAX_WIDTH));
+}
+
 const VoiceBubbleBody: FC<{ message: IVoiceMessage }> = ({ message }) => (
-  <div className="wechat-msg-bubble wechat-msg-bubble--voice">
-    <span className="wechat-msg-bubble__voice-icon" aria-hidden>🎤</span>
+  <div
+    className="wechat-msg-bubble wechat-msg-bubble--voice"
+    style={{ width: voiceBubbleWidth(message.durationSec) }}
+  >
+    <span className="wechat-msg-bubble__voice-icon" aria-hidden>
+      <Icon name="voice" size={16} strokeWidth={1.8} />
+    </span>
     <span className="wechat-msg-bubble__voice-duration">
       {Math.round(message.durationSec)}″
     </span>

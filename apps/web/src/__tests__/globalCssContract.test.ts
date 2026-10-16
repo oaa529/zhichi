@@ -24,11 +24,16 @@ const code = css.replace(/\/\*[\s\S]*?\*\//g, "");
 
 /**
  * 取某条规则的声明块（含花括号之间的内容）。
- * 选择器精确匹配，避免 `.zhichi-input-bar` 误配到 `--apply` 之类的后缀。
+ *
+ * 选择器精确匹配，避免 `.zhichi-input-bar` 误配到 `--apply` 之类的后缀；
+ * 同时支持逗号分组——`.a,\n.b { }` 里单独查 `.a` 或 `.b` 都应拿到同一份声明。
  */
 function rule(selector: string): string {
   const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const m = code.match(new RegExp(`(?:^|[}\\s])${escaped}\\s*\\{([^}]*)\\}`));
+  const grouped = new RegExp(
+    `(?:^|[}\\s])${escaped}\\s*(?:,[^{]*)?\\{([^}]*)\\}`,
+  );
+  const m = code.match(grouped);
   expect(m, `样式表里找不到规则 ${selector}`).not.toBeNull();
   return m?.[1] ?? "";
 }
@@ -77,6 +82,46 @@ describe("global.css · 布局契约", () => {
     // 普通 center 会把头像顶出容器上沿，再被上层 overflow:hidden 裁掉且滚不回来。
     expect(empty).toMatch(/justify-content:\s*safe\s+center/);
     expect(empty).toMatch(/overflow-y:\s*auto/);
+  });
+
+  it("系统消息与撤回提示整行居中，不套用普通消息的左右对齐", () => {
+    // 它们没有头像了，但行本身若还是 row / row-reverse，文字会被顶到一侧。
+    for (const type of ["system", "recall"]) {
+      const sel = `.wechat-msg[data-msg-type="${type}"]`;
+      const body = rule(`${sel} .wechat-msg__body`);
+      expect(body, `${sel} 缺少 body 居中规则`).toMatch(/justify-content:\s*center/);
+    }
+    // system/recall 的气泡底色必须仍是透明的（居中灰字，不画气泡）
+    expect(rule(".wechat-msg-bubble--system")).toMatch(/background:\s*transparent/);
+    expect(rule(".wechat-msg-bubble--recall")).toMatch(/background:\s*transparent/);
+  });
+
+  it("语音气泡有底色，且和文字气泡同一档", () => {
+    // 背景色原先只挂在 --text/--typing 上，语音气泡直接印在聊天背景上。
+    const other = code.match(
+      /\.wechat-msg-bubble--text,\s*([^{]*?)\{\s*background:\s*([^;]+);/,
+    );
+    expect(other, "找不到文字气泡的背景色规则").not.toBeNull();
+    expect(other?.[1]).toContain("--voice");
+    // 自己发的语音要是绿色气泡
+    const self = code.match(
+      /\.wechat-msg\[data-self="true"\][^{]*--text,\s*([^{]*?)\{\s*background:\s*([^;]+);/,
+    );
+    expect(self?.[1]).toContain("--voice");
+  });
+
+  it("引用预览是单行内联，不是上下两行", () => {
+    const quote = rule(".wechat-msg__quote");
+    // column 会让"名字 / 正文"各占一行，短引用也要 58px 高，像凭空多了一条消息
+    expect(quote).not.toMatch(/flex-direction:\s*column/);
+    expect(quote).toMatch(/display:\s*flex/);
+
+    // 正文必须允许收缩，否则 text-overflow: ellipsis 永远不触发
+    const text = rule(".wechat-msg__quote-text");
+    expect(text).toMatch(/min-width:\s*0\b/);
+    expect(text).toMatch(/text-overflow:\s*ellipsis/);
+    // 名字不许被挤没
+    expect(rule(".wechat-msg__quote-name")).toMatch(/flex-shrink:\s*0/);
   });
 });
 
